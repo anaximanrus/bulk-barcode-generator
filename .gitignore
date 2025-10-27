@@ -42,3 +42,7 @@ backup/
 
 # Documentation files
 docs/
+
+# Claude files
+.claude/    
+CLAUDE.md
