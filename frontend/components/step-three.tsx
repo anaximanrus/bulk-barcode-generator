@@ -5,12 +5,12 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Progress } from "@/components/ui/progress"
-import { Download, Loader2, CheckCircle2, AlertCircle } from "lucide-react"
+import { Download, Loader2, CheckCircle2, AlertCircle, FileText } from "lucide-react"
 import type { BarcodeConfig } from "@/types/barcode"
 import { determineGenerationMode, estimateGenerationTime, formatTimeEstimate } from "@/lib/hybridRouting"
 import { generateBarcodes } from "@/lib/barcodeGenerator"
 import { downloadBarcodes } from "@/lib/zipGenerator"
-import { generateBarcodesAPI } from "@/lib/apiClient"
+import { generateBarcodesAPI, generatePrintReadyPNG, generatePrintReadyPDF, type PrintLayoutConfig } from "@/lib/apiClient"
 import { downloadZipFile } from "@/lib/zipGenerator"
 
 interface StepThreeProps {
@@ -89,6 +89,108 @@ export function StepThree({ barcodeData, config, maxLimit }: StepThreeProps) {
     }
   }
 
+  const handleGeneratePrintReady = async () => {
+    setIsGenerating(true)
+    setStatus("generating")
+    setProgress(0)
+    setErrorMessage("")
+    setGenerationMode("server")
+
+    try {
+      // Prepare layout config with continuous mode from barcode config
+      const layoutConfig: PrintLayoutConfig = {
+        continuousMode: config.continuousMode,
+      }
+
+      // Generate print-ready PNG (server-side only)
+      const blob = await generatePrintReadyPNG(
+        {
+          data: barcodeData,
+          configuration: config,
+          layoutConfig,
+        },
+        (downloadProgress) => {
+          setProgress(Math.min(95, downloadProgress))
+        }
+      )
+
+      // Download the PNG
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `barcodes_print_ready_${Date.now()}.png`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+
+      setProgress(100)
+      setStatus("success")
+
+      // Auto-close after 2 seconds
+      setTimeout(() => {
+        setIsGenerating(false)
+        setStatus("idle")
+        setProgress(0)
+      }, 2000)
+    } catch (error) {
+      console.error("PNG generation error:", error)
+      setStatus("error")
+      setErrorMessage(error instanceof Error ? error.message : "Failed to generate print-ready PNG")
+    }
+  }
+
+  const handleGeneratePrintReadyPDF = async () => {
+    setIsGenerating(true)
+    setStatus("generating")
+    setProgress(0)
+    setErrorMessage("")
+    setGenerationMode("server")
+
+    try {
+      // Prepare layout config with continuous mode from barcode config
+      const layoutConfig: PrintLayoutConfig = {
+        continuousMode: config.continuousMode,
+      }
+
+      // Generate print-ready PDF (server-side only)
+      const blob = await generatePrintReadyPDF(
+        {
+          data: barcodeData,
+          configuration: config,
+          layoutConfig,
+        },
+        (downloadProgress) => {
+          setProgress(Math.min(95, downloadProgress))
+        }
+      )
+
+      // Download the PDF
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `barcodes_print_ready_${Date.now()}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+
+      setProgress(100)
+      setStatus("success")
+
+      // Auto-close after 2 seconds
+      setTimeout(() => {
+        setIsGenerating(false)
+        setStatus("idle")
+        setProgress(0)
+      }, 2000)
+    } catch (error) {
+      console.error("PDF generation error:", error)
+      setStatus("error")
+      setErrorMessage(error instanceof Error ? error.message : "Failed to generate print-ready PDF")
+    }
+  }
+
   const closeModal = () => {
     setIsGenerating(false)
     setStatus("idle")
@@ -128,15 +230,41 @@ export function StepThree({ barcodeData, config, maxLimit }: StepThreeProps) {
                 </p>
               )}
             </div>
-            <Button
-              size="lg"
-              disabled={!isReady}
-              onClick={handleGenerate}
-              className="w-full lg:w-auto lg:min-w-[200px]"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              {isReady ? `Generate ${count} Barcode${count !== 1 ? "s" : ""}` : "Cannot Generate"}
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
+              <Button
+                size="lg"
+                disabled={!isReady}
+                onClick={handleGenerate}
+                className="w-full lg:w-auto lg:min-w-[200px]"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                {isReady ? `Generate ZIP` : "Cannot Generate"}
+              </Button>
+              {count >= 20 && (
+                <>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    disabled={!isReady}
+                    onClick={handleGeneratePrintReady}
+                    className="w-full lg:w-auto lg:min-w-[200px]"
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    Print-Ready PNG
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    disabled={!isReady}
+                    onClick={handleGeneratePrintReadyPDF}
+                    className="w-full lg:w-auto lg:min-w-[200px]"
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    Print-Ready PDF
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -153,7 +281,9 @@ export function StepThree({ barcodeData, config, maxLimit }: StepThreeProps) {
             </DialogTitle>
             <DialogDescription>
               {status === "determining" && "Checking API availability and optimizing generation..."}
-              {status === "generating" &&
+              {status === "generating" && generationMode === "server" &&
+                "Generating print-ready PDF with barcodes..."}
+              {status === "generating" && generationMode !== "server" &&
                 `Using ${generationMode === "client" ? "client-side" : "server-side"} generation`}
               {status === "success" && "Your barcodes have been generated and downloaded."}
               {status === "error" && errorMessage}

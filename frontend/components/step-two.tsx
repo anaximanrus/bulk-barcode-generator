@@ -71,6 +71,31 @@ export function StepTwo({ config, setConfig, barcodeData }: StepTwoProps) {
               {selectedType && <p className="text-xs text-muted-foreground">{selectedType.description}</p>}
             </div>
 
+            {/* Orientation */}
+            <div className="space-y-2">
+              <Label>Orientation</Label>
+              <div className="flex border rounded-lg overflow-hidden">
+                {(["horizontal", "vertical"] as const).map((orientation) => (
+                  <button
+                    key={orientation}
+                    onClick={() => setConfig({ ...config, orientation })}
+                    className={`flex-1 px-4 py-2 text-sm font-medium transition-colors ${
+                      (config.orientation || "horizontal") === orientation
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-background hover:bg-muted"
+                    }`}
+                  >
+                    {orientation === "horizontal" ? "Horizontal" : "Vertical"}
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {(config.orientation || "horizontal") === "horizontal"
+                  ? "Standard layout (barcode reads left to right)"
+                  : "Portrait layout (barcode rotated 90° for vertical labels)"}
+              </p>
+            </div>
+
           {/* Primary Dimensions */}
           <div className="space-y-3">
             <Label>Primary Dimensions</Label>
@@ -209,6 +234,27 @@ export function StepTwo({ config, setConfig, barcodeData }: StepTwoProps) {
               >
                 BAR12345678
               </p>
+            </div>
+            <div className="flex items-center justify-between pt-2">
+              <div className="space-y-0.5">
+                <Label htmlFor="auto-adjust-font" className="text-sm font-normal">
+                  Auto-adjust font for small barcodes
+                </Label>
+                <p className="text-xs text-muted-foreground">Improves readability for barcodes &lt; 1cm height</p>
+              </div>
+              <Switch
+                id="auto-adjust-font"
+                checked={config.font.autoAdjustFont ?? true}
+                onCheckedChange={(checked) =>
+                  setConfig({
+                    ...config,
+                    font: {
+                      ...config.font,
+                      autoAdjustFont: checked,
+                    },
+                  })
+                }
+              />
             </div>
           </div>
 
@@ -378,6 +424,7 @@ export function StepTwo({ config, setConfig, barcodeData }: StepTwoProps) {
                       dualFont: {
                         family: config.font.family,
                         size: config.font.size,
+                        autoAdjustFont: true,
                       },
                     })
                   } else {
@@ -512,10 +559,62 @@ export function StepTwo({ config, setConfig, barcodeData }: StepTwoProps) {
                           BAR12345678
                         </p>
                       </div>
+                      <div className="flex items-center justify-between pt-3">
+                        <div className="space-y-0.5">
+                          <Label htmlFor="dual-auto-adjust-font" className="text-sm font-normal">
+                            Auto-adjust font for small barcodes
+                          </Label>
+                          <p className="text-xs text-muted-foreground">Improves readability for barcodes &lt; 1cm height</p>
+                        </div>
+                        <Switch
+                          id="dual-auto-adjust-font"
+                          checked={config.dualFont?.autoAdjustFont ?? true}
+                          onCheckedChange={(checked) =>
+                            setConfig({
+                              ...config,
+                              dualFont: {
+                                family: config.dualFont?.family || config.font.family,
+                                size: config.dualFont?.size || config.font.size,
+                                autoAdjustFont: checked,
+                              },
+                            })
+                          }
+                        />
+                      </div>
                     </div>
                   </div>
                 </CollapsibleContent>
               </Collapsible>
+            )}
+          </div>
+
+          {/* Continuous Mode */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="continuous-mode" className="text-sm font-normal">
+                  Continuous Mode
+                </Label>
+                <p className="text-xs text-muted-foreground">Single row layout for label roll printing</p>
+              </div>
+              <Switch
+                id="continuous-mode"
+                checked={config.continuousMode || false}
+                onCheckedChange={(checked) =>
+                  setConfig({
+                    ...config,
+                    continuousMode: checked,
+                  })
+                }
+              />
+            </div>
+            {config.continuousMode && (
+              <div className="p-3 bg-muted/50 rounded-lg border">
+                <p className="text-xs text-muted-foreground">
+                  All barcodes will be arranged in a single horizontal row. Canvas width will be calculated automatically
+                  based on barcode count. Perfect for continuous label roll printers.
+                </p>
+              </div>
             )}
           </div>
         </CardContent>

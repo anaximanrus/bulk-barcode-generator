@@ -35,6 +35,8 @@ export default function Home() {
       },
     },
     dualMode: false,
+    orientation: "horizontal",
+    continuousMode: false,
   })
 
   // Load saved config and max limit from localStorage on mount

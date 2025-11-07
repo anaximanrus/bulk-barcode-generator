@@ -12,6 +12,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@barcode-generator/shared": "workspace:*",
     "archiver": "^7.0.1",
     "bwip-js": "^4.6.1",
     "cors": "^2.8.5",
@@ -19,6 +20,7 @@
     "express": "^4.21.2",
     "express-rate-limit": "^7.5.1",
     "multer": "^1.4.5-lts.1",
+    "pdfkit": "^0.17.2",
     "sharp": "^0.33.5",
     "zod": "^4.1.12"
   },
@@ -29,6 +31,7 @@
     "@types/express": "^5.0.1",
     "@types/multer": "^1.4.12",
     "@types/node": "^24.9.1",
+    "@types/pdfkit": "^0.17.3",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3"
   }

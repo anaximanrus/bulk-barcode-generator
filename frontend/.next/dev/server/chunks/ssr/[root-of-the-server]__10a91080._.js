@@ -1528,12 +1528,14 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barco
 var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/Projects/Barcode/node_modules/.pnpm/next@16.0.0_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$jsbarcode$40$3$2e$12$2e$1$2f$node_modules$2f$jsbarcode$2f$bin$2f$JsBarcode$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/Projects/Barcode/node_modules/.pnpm/jsbarcode@3.12.1/node_modules/jsbarcode/bin/JsBarcode.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$qrcode$2e$react$40$4$2e$2$2e$0_react$40$19$2e$2$2e$0$2f$node_modules$2f$qrcode$2e$react$2f$lib$2f$esm$2f$index$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/Projects/Barcode/node_modules/.pnpm/qrcode.react@4.2.0_react@19.2.0/node_modules/qrcode.react/lib/esm/index.js [app-ssr] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/Projects/Barcode/frontend/components/ui/button.tsx [app-ssr] (ecmascript)");
 "use client";
 ;
 ;
 ;
 ;
-function SingleBarcodePreview({ config, dimensions, label, sampleData, fontConfig }) {
+;
+function SingleBarcodePreview({ config, dimensions, label, sampleData, fontConfig, actualSize }) {
     const canvasRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])(null);
     const [error, setError] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])("");
     // Use provided fontConfig or fall back to config.font
@@ -1546,6 +1548,21 @@ function SingleBarcodePreview({ config, dimensions, label, sampleData, fontConfi
         }
         return Math.round(value * DPI);
     };
+    // Process data by removing ignored digits (same as backend)
+    const processData = (data)=>{
+        const ignoreDigits = config.options.ignoreDigits;
+        if (!ignoreDigits || !ignoreDigits.enabled) {
+            return data;
+        }
+        const { position, count } = ignoreDigits;
+        if (position === "start") {
+            return data.slice(count);
+        } else {
+            return data.slice(0, -count);
+        }
+    };
+    // Process the sample data
+    const processedData = processData(sampleData);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
         if (config.type === "qr") {
             setError("");
@@ -1556,6 +1573,11 @@ function SingleBarcodePreview({ config, dimensions, label, sampleData, fontConfi
             const canvas = canvasRef.current;
             const width = convertToPixels(dimensions.width, dimensions.unit);
             const height = convertToPixels(dimensions.height, dimensions.unit);
+            // Check if vertical orientation
+            const isVertical = config.orientation === "vertical";
+            // When vertical, swap dimensions for generation, then rotate
+            const generateWidth = isVertical ? height : width;
+            const generateHeight = isVertical ? width : height;
             // Map barcode type to JsBarcode format
             const formatMap = {
                 code128: "CODE128",
@@ -1565,21 +1587,15 @@ function SingleBarcodePreview({ config, dimensions, label, sampleData, fontConfi
                 code39: "CODE39"
             };
             const format = formatMap[config.type] || "CODE128";
-            // Clear canvas
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext("2d");
-            if (ctx) {
-                ctx.fillStyle = "#ffffff";
-                ctx.fillRect(0, 0, width, height);
-            }
-            // Generate barcode
-            (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$jsbarcode$40$3$2e$12$2e$1$2f$node_modules$2f$jsbarcode$2f$bin$2f$JsBarcode$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"])(canvas, sampleData, {
+            // Create temporary canvas for JsBarcode generation
+            const tempCanvas = document.createElement("canvas");
+            // Generate barcode on temporary canvas (use swapped dimensions for vertical)
+            (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$jsbarcode$40$3$2e$12$2e$1$2f$node_modules$2f$jsbarcode$2f$bin$2f$JsBarcode$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"])(tempCanvas, processedData, {
                 format,
-                width: config.options.stretch ? width / 100 : 2,
-                height: config.options.stretch ? height * 0.7 : height * 0.5,
+                width: config.options.stretch ? generateWidth / 100 : 2,
+                height: config.options.stretch ? generateHeight * 0.7 : generateHeight * 0.5,
                 displayValue: config.options.showText,
-                text: sampleData,
+                text: processedData,
                 font: activeFont.family,
                 fontSize: activeFont.size,
                 textMargin: 8,
@@ -1587,6 +1603,48 @@ function SingleBarcodePreview({ config, dimensions, label, sampleData, fontConfi
                 background: "#ffffff",
                 lineColor: "#000000"
             });
+            // Create intermediate canvas with swapped dimensions for vertical orientation
+            const intermediateCanvas = document.createElement("canvas");
+            intermediateCanvas.width = generateWidth;
+            intermediateCanvas.height = generateHeight;
+            // Draw the generated barcode onto intermediate canvas
+            const intermediateCtx = intermediateCanvas.getContext("2d");
+            if (intermediateCtx) {
+                // Fill with white background
+                intermediateCtx.fillStyle = "#ffffff";
+                intermediateCtx.fillRect(0, 0, generateWidth, generateHeight);
+                // Draw the barcode centered or stretched to fill
+                if (config.options.stretch) {
+                    // Stretch to fill entire canvas
+                    intermediateCtx.drawImage(tempCanvas, 0, 0, generateWidth, generateHeight);
+                } else {
+                    // Center the barcode
+                    const x = (generateWidth - tempCanvas.width) / 2;
+                    const y = (generateHeight - tempCanvas.height) / 2;
+                    intermediateCtx.drawImage(tempCanvas, x, y);
+                }
+            }
+            // Set our canvas to exact dimensions
+            canvas.width = width;
+            canvas.height = height;
+            // Draw the generated barcode onto our fixed-size canvas
+            const ctx = canvas.getContext("2d");
+            if (ctx) {
+                // Fill with white background
+                ctx.fillStyle = "#ffffff";
+                ctx.fillRect(0, 0, width, height);
+                if (isVertical) {
+                    // Rotate 90 degrees clockwise for vertical orientation
+                    ctx.save();
+                    ctx.translate(width / 2, height / 2);
+                    ctx.rotate(Math.PI / 2);
+                    ctx.drawImage(intermediateCanvas, -generateWidth / 2, -generateHeight / 2);
+                    ctx.restore();
+                } else {
+                    // Draw directly for horizontal orientation
+                    ctx.drawImage(intermediateCanvas, 0, 0);
+                }
+            }
             setError("");
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failed to generate preview");
@@ -1596,7 +1654,8 @@ function SingleBarcodePreview({ config, dimensions, label, sampleData, fontConfi
         config,
         dimensions,
         sampleData,
-        activeFont
+        activeFont,
+        processedData
     ]);
     const qrSize = Math.min(convertToPixels(dimensions.width, dimensions.unit), convertToPixels(dimensions.height, dimensions.unit));
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1610,7 +1669,7 @@ function SingleBarcodePreview({ config, dimensions, label, sampleData, fontConfi
                         children: label
                     }, void 0, false, {
                         fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                        lineNumber: 100,
+                        lineNumber: 170,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1624,17 +1683,20 @@ function SingleBarcodePreview({ config, dimensions, label, sampleData, fontConfi
                         ]
                     }, void 0, true, {
                         fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                        lineNumber: 101,
+                        lineNumber: 171,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                lineNumber: 99,
+                lineNumber: 169,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "border-2 border-dashed rounded-lg p-6 bg-muted/30 flex items-center justify-center min-h-[200px]",
+                className: `border-2 border-dashed rounded-lg ${actualSize ? "p-0" : "p-6"} bg-muted/30 flex items-center justify-center min-h-[200px]`,
+                style: actualSize ? {
+                    overflow: "auto"
+                } : undefined,
                 children: error ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "text-sm text-destructive text-center",
                     children: [
@@ -1643,7 +1705,7 @@ function SingleBarcodePreview({ config, dimensions, label, sampleData, fontConfi
                             children: "Preview Error"
                         }, void 0, false, {
                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                            lineNumber: 109,
+                            lineNumber: 182,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1651,25 +1713,28 @@ function SingleBarcodePreview({ config, dimensions, label, sampleData, fontConfi
                             children: error
                         }, void 0, false, {
                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                            lineNumber: 110,
+                            lineNumber: 183,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                    lineNumber: 108,
+                    lineNumber: 181,
                     columnNumber: 11
                 }, this) : config.type === "qr" ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "flex flex-col items-center gap-2",
+                    className: `flex flex-col items-center gap-2 ${actualSize ? "border-2 border-primary" : ""}`,
+                    style: actualSize ? {
+                        padding: 0
+                    } : undefined,
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$qrcode$2e$react$40$4$2e$2$2e$0_react$40$19$2e$2$2e$0$2f$node_modules$2f$qrcode$2e$react$2f$lib$2f$esm$2f$index$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["QRCodeSVG"], {
-                            value: sampleData,
+                            value: processedData,
                             size: qrSize,
                             level: "M",
                             includeMargin: true
                         }, void 0, false, {
                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                            lineNumber: 114,
+                            lineNumber: 190,
                             columnNumber: 13
                         }, this),
                         config.options.showText && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1678,52 +1743,98 @@ function SingleBarcodePreview({ config, dimensions, label, sampleData, fontConfi
                                 fontFamily: activeFont.family,
                                 fontSize: `${activeFont.size}px`
                             },
-                            children: sampleData
+                            children: processedData
                         }, void 0, false, {
                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                            lineNumber: 121,
+                            lineNumber: 197,
                             columnNumber: 15
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                    lineNumber: 113,
+                    lineNumber: 186,
                     columnNumber: 11
                 }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("canvas", {
                     ref: canvasRef,
-                    className: "max-w-full h-auto",
+                    className: actualSize ? "border-2 border-primary" : "max-w-full h-auto",
                     style: {
                         imageRendering: "crisp-edges"
                     }
                 }, void 0, false, {
                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                    lineNumber: 133,
+                    lineNumber: 209,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                lineNumber: 106,
+                lineNumber: 176,
                 columnNumber: 7
             }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                className: "text-xs text-muted-foreground text-center",
-                children: [
-                    "Sample: ",
-                    sampleData
-                ]
-            }, void 0, true, {
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "text-xs text-muted-foreground text-center space-y-1",
+                children: config.options.ignoreDigits?.enabled ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
+                    children: [
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                    className: "font-medium",
+                                    children: "Original:"
+                                }, void 0, false, {
+                                    fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
+                                    lineNumber: 221,
+                                    columnNumber: 15
+                                }, this),
+                                " ",
+                                sampleData
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
+                            lineNumber: 220,
+                            columnNumber: 13
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                    className: "font-medium",
+                                    children: "After Ignore Digits:"
+                                }, void 0, false, {
+                                    fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
+                                    lineNumber: 224,
+                                    columnNumber: 15
+                                }, this),
+                                " ",
+                                processedData
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
+                            lineNumber: 223,
+                            columnNumber: 13
+                        }, this)
+                    ]
+                }, void 0, true) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                    children: [
+                        "Sample: ",
+                        sampleData
+                    ]
+                }, void 0, true, {
+                    fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
+                    lineNumber: 228,
+                    columnNumber: 11
+                }, this)
+            }, void 0, false, {
                 fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                lineNumber: 141,
+                lineNumber: 217,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-        lineNumber: 98,
+        lineNumber: 168,
         columnNumber: 5
     }, this);
 }
 function BarcodePreview({ config, barcodeData }) {
+    const [actualSize, setActualSize] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
     // Get sample data from input or use defaults based on barcode type
     const getSampleData = ()=>{
         if (barcodeData.length > 0) {
@@ -1747,42 +1858,100 @@ function BarcodePreview({ config, barcodeData }) {
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "space-y-6",
         children: [
-            hasInputData && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 px-3 py-2 rounded-md",
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "flex items-center justify-between gap-4",
                 children: [
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                        className: "font-medium",
-                        children: "Preview showing:"
-                    }, void 0, false, {
-                        fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                        lineNumber: 176,
-                        columnNumber: 11
-                    }, this),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                    hasInputData && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 px-3 py-2 rounded-md",
                         children: [
-                            "First item from your data (",
-                            barcodeData.length,
-                            " total)"
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                className: "font-medium",
+                                children: "Preview showing:"
+                            }, void 0, false, {
+                                fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
+                                lineNumber: 266,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                children: [
+                                    "First item from your data (",
+                                    barcodeData.length,
+                                    " total)"
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
+                                lineNumber: 267,
+                                columnNumber: 13
+                            }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                        lineNumber: 177,
+                        lineNumber: 265,
                         columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "flex items-center gap-2 ml-auto",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                className: "text-xs text-muted-foreground",
+                                children: "Preview Mode:"
+                            }, void 0, false, {
+                                fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
+                                lineNumber: 272,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "flex gap-1 border rounded-md p-1",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
+                                        variant: !actualSize ? "secondary" : "ghost",
+                                        size: "sm",
+                                        onClick: ()=>setActualSize(false),
+                                        className: "h-7 px-3 text-xs",
+                                        children: "Fit to Container"
+                                    }, void 0, false, {
+                                        fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
+                                        lineNumber: 274,
+                                        columnNumber: 13
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
+                                        variant: actualSize ? "secondary" : "ghost",
+                                        size: "sm",
+                                        onClick: ()=>setActualSize(true),
+                                        className: "h-7 px-3 text-xs",
+                                        children: "Actual Size"
+                                    }, void 0, false, {
+                                        fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
+                                        lineNumber: 282,
+                                        columnNumber: 13
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
+                                lineNumber: 273,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
+                        lineNumber: 271,
+                        columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                lineNumber: 175,
-                columnNumber: 9
+                lineNumber: 263,
+                columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(SingleBarcodePreview, {
                 config: config,
                 dimensions: config.dimensions,
                 label: "Primary Preview",
-                sampleData: sampleData
+                sampleData: sampleData,
+                actualSize: actualSize
             }, void 0, false, {
                 fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                lineNumber: 182,
+                lineNumber: 295,
                 columnNumber: 7
             }, this),
             config.dualMode && config.dualDimensions && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
@@ -1793,22 +1962,23 @@ function BarcodePreview({ config, barcodeData }) {
                         dimensions: config.dualDimensions,
                         label: "Secondary Preview",
                         sampleData: sampleData,
-                        fontConfig: config.dualFont
+                        fontConfig: config.dualFont,
+                        actualSize: actualSize
                     }, void 0, false, {
                         fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                        lineNumber: 193,
+                        lineNumber: 307,
                         columnNumber: 13
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                    lineNumber: 192,
+                    lineNumber: 306,
                     columnNumber: 11
                 }, this)
             }, void 0, false)
         ]
     }, void 0, true, {
         fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-        lineNumber: 172,
+        lineNumber: 261,
         columnNumber: 5
     }, this);
 }
@@ -2005,13 +2175,59 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "space-y-2",
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Label"], {
+                                            children: "Orientation"
+                                        }, void 0, false, {
+                                            fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
+                                            lineNumber: 76,
+                                            columnNumber: 15
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "flex border rounded-lg overflow-hidden",
+                                            children: [
+                                                "horizontal",
+                                                "vertical"
+                                            ].map((orientation)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                    onClick: ()=>setConfig({
+                                                            ...config,
+                                                            orientation
+                                                        }),
+                                                    className: `flex-1 px-4 py-2 text-sm font-medium transition-colors ${(config.orientation || "horizontal") === orientation ? "bg-primary text-primary-foreground" : "bg-background hover:bg-muted"}`,
+                                                    children: orientation === "horizontal" ? "Horizontal" : "Vertical"
+                                                }, orientation, false, {
+                                                    fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
+                                                    lineNumber: 79,
+                                                    columnNumber: 19
+                                                }, this))
+                                        }, void 0, false, {
+                                            fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
+                                            lineNumber: 77,
+                                            columnNumber: 15
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                            className: "text-xs text-muted-foreground",
+                                            children: (config.orientation || "horizontal") === "horizontal" ? "Standard layout (barcode reads left to right)" : "Portrait layout (barcode rotated 90° for vertical labels)"
+                                        }, void 0, false, {
+                                            fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
+                                            lineNumber: 92,
+                                            columnNumber: 15
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
+                                    lineNumber: 75,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "space-y-3",
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Label"], {
                                             children: "Primary Dimensions"
                                         }, void 0, false, {
                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                            lineNumber: 76,
+                                            lineNumber: 101,
                                             columnNumber: 13
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2026,7 +2242,7 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                             children: "Width"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                            lineNumber: 79,
+                                                            lineNumber: 104,
                                                             columnNumber: 17
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
@@ -2045,13 +2261,13 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                                 })
                                                         }, void 0, false, {
                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                            lineNumber: 82,
+                                                            lineNumber: 107,
                                                             columnNumber: 17
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                    lineNumber: 78,
+                                                    lineNumber: 103,
                                                     columnNumber: 15
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2063,7 +2279,7 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                             children: "Height"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                            lineNumber: 101,
+                                                            lineNumber: 126,
                                                             columnNumber: 17
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
@@ -2082,13 +2298,13 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                                 })
                                                         }, void 0, false, {
                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                            lineNumber: 104,
+                                                            lineNumber: 129,
                                                             columnNumber: 17
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                    lineNumber: 100,
+                                                    lineNumber: 125,
                                                     columnNumber: 15
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2108,24 +2324,24 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                             children: unit
                                                         }, unit, false, {
                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                            lineNumber: 124,
+                                                            lineNumber: 149,
                                                             columnNumber: 19
                                                         }, this))
                                                 }, void 0, false, {
                                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                    lineNumber: 122,
+                                                    lineNumber: 147,
                                                     columnNumber: 15
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                            lineNumber: 77,
+                                            lineNumber: 102,
                                             columnNumber: 13
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                    lineNumber: 75,
+                                    lineNumber: 100,
                                     columnNumber: 11
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2135,7 +2351,7 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                             children: "Font Settings"
                                         }, void 0, false, {
                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                            lineNumber: 150,
+                                            lineNumber: 175,
                                             columnNumber: 13
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2150,7 +2366,7 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                             children: "Font Family"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                            lineNumber: 153,
+                                                            lineNumber: 178,
                                                             columnNumber: 17
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Select"], {
@@ -2167,12 +2383,12 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                                     id: "font-family",
                                                                     children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectValue"], {}, void 0, false, {
                                                                         fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                                        lineNumber: 169,
+                                                                        lineNumber: 194,
                                                                         columnNumber: 21
                                                                     }, this)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                                    lineNumber: 168,
+                                                                    lineNumber: 193,
                                                                     columnNumber: 19
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectContent"], {
@@ -2181,24 +2397,24 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                                             children: font
                                                                         }, font, false, {
                                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                                            lineNumber: 173,
+                                                                            lineNumber: 198,
                                                                             columnNumber: 23
                                                                         }, this))
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                                    lineNumber: 171,
+                                                                    lineNumber: 196,
                                                                     columnNumber: 19
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                            lineNumber: 156,
+                                                            lineNumber: 181,
                                                             columnNumber: 17
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                    lineNumber: 152,
+                                                    lineNumber: 177,
                                                     columnNumber: 15
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2210,7 +2426,7 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                             children: "Font Size (px)"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                            lineNumber: 181,
+                                                            lineNumber: 206,
                                                             columnNumber: 17
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
@@ -2228,19 +2444,19 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                                 })
                                                         }, void 0, false, {
                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                            lineNumber: 184,
+                                                            lineNumber: 209,
                                                             columnNumber: 17
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                    lineNumber: 180,
+                                                    lineNumber: 205,
                                                     columnNumber: 15
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                            lineNumber: 151,
+                                            lineNumber: 176,
                                             columnNumber: 13
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2254,18 +2470,68 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                 children: "BAR12345678"
                                             }, void 0, false, {
                                                 fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                lineNumber: 203,
+                                                lineNumber: 228,
                                                 columnNumber: 15
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                            lineNumber: 202,
+                                            lineNumber: 227,
+                                            columnNumber: 13
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "flex items-center justify-between pt-2",
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "space-y-0.5",
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Label"], {
+                                                            htmlFor: "auto-adjust-font",
+                                                            className: "text-sm font-normal",
+                                                            children: "Auto-adjust font for small barcodes"
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
+                                                            lineNumber: 240,
+                                                            columnNumber: 17
+                                                        }, this),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                            className: "text-xs text-muted-foreground",
+                                                            children: "Improves readability for barcodes < 1cm height"
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
+                                                            lineNumber: 243,
+                                                            columnNumber: 17
+                                                        }, this)
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
+                                                    lineNumber: 239,
+                                                    columnNumber: 15
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$switch$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Switch"], {
+                                                    id: "auto-adjust-font",
+                                                    checked: config.font.autoAdjustFont ?? true,
+                                                    onCheckedChange: (checked)=>setConfig({
+                                                            ...config,
+                                                            font: {
+                                                                ...config.font,
+                                                                autoAdjustFont: checked
+                                                            }
+                                                        })
+                                                }, void 0, false, {
+                                                    fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
+                                                    lineNumber: 245,
+                                                    columnNumber: 15
+                                                }, this)
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
+                                            lineNumber: 238,
                                             columnNumber: 13
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                    lineNumber: 149,
+                                    lineNumber: 174,
                                     columnNumber: 11
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2275,7 +2541,7 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                             children: "Options"
                                         }, void 0, false, {
                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                            lineNumber: 217,
+                                            lineNumber: 263,
                                             columnNumber: 13
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2293,7 +2559,7 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                                     children: "Show Text"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                                    lineNumber: 221,
+                                                                    lineNumber: 267,
                                                                     columnNumber: 19
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2301,13 +2567,13 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                                     children: "Display barcode value below the image"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                                    lineNumber: 224,
+                                                                    lineNumber: 270,
                                                                     columnNumber: 19
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                            lineNumber: 220,
+                                                            lineNumber: 266,
                                                             columnNumber: 17
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$switch$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Switch"], {
@@ -2322,13 +2588,13 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                                 })
                                                         }, void 0, false, {
                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                            lineNumber: 226,
+                                                            lineNumber: 272,
                                                             columnNumber: 17
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                    lineNumber: 219,
+                                                    lineNumber: 265,
                                                     columnNumber: 15
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2343,7 +2609,7 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                                     children: "Stretch"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                                    lineNumber: 242,
+                                                                    lineNumber: 288,
                                                                     columnNumber: 19
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2351,13 +2617,13 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                                     children: "Stretch barcode to fill exact dimensions"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                                    lineNumber: 245,
+                                                                    lineNumber: 291,
                                                                     columnNumber: 19
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                            lineNumber: 241,
+                                                            lineNumber: 287,
                                                             columnNumber: 17
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$switch$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Switch"], {
@@ -2372,25 +2638,25 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                                 })
                                                         }, void 0, false, {
                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                            lineNumber: 247,
+                                                            lineNumber: 293,
                                                             columnNumber: 17
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                    lineNumber: 240,
+                                                    lineNumber: 286,
                                                     columnNumber: 15
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                            lineNumber: 218,
+                                            lineNumber: 264,
                                             columnNumber: 13
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                    lineNumber: 216,
+                                    lineNumber: 262,
                                     columnNumber: 11
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2408,7 +2674,7 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                             children: "Ignore Digits"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                            lineNumber: 268,
+                                                            lineNumber: 314,
                                                             columnNumber: 17
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2416,13 +2682,13 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                             children: "Remove digits from beginning or end"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                            lineNumber: 271,
+                                                            lineNumber: 317,
                                                             columnNumber: 17
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                    lineNumber: 267,
+                                                    lineNumber: 313,
                                                     columnNumber: 15
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$switch$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Switch"], {
@@ -2441,13 +2707,13 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                         })
                                                 }, void 0, false, {
                                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                    lineNumber: 273,
+                                                    lineNumber: 319,
                                                     columnNumber: 15
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                            lineNumber: 266,
+                                            lineNumber: 312,
                                             columnNumber: 13
                                         }, this),
                                         config.options.ignoreDigits?.enabled && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2462,7 +2728,7 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                             children: "Position"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                            lineNumber: 295,
+                                                            lineNumber: 341,
                                                             columnNumber: 19
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Select"], {
@@ -2482,12 +2748,12 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                                     id: "ignore-position",
                                                                     children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectValue"], {}, void 0, false, {
                                                                         fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                                        lineNumber: 314,
+                                                                        lineNumber: 360,
                                                                         columnNumber: 23
                                                                     }, this)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                                    lineNumber: 313,
+                                                                    lineNumber: 359,
                                                                     columnNumber: 21
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectContent"], {
@@ -2497,7 +2763,7 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                                             children: "From Beginning"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                                            lineNumber: 317,
+                                                                            lineNumber: 363,
                                                                             columnNumber: 23
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectItem"], {
@@ -2505,25 +2771,25 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                                             children: "From End"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                                            lineNumber: 318,
+                                                                            lineNumber: 364,
                                                                             columnNumber: 23
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                                    lineNumber: 316,
+                                                                    lineNumber: 362,
                                                                     columnNumber: 21
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                            lineNumber: 298,
+                                                            lineNumber: 344,
                                                             columnNumber: 19
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                    lineNumber: 294,
+                                                    lineNumber: 340,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2535,7 +2801,7 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                             children: "Number of Digits"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                            lineNumber: 323,
+                                                            lineNumber: 369,
                                                             columnNumber: 19
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
@@ -2556,13 +2822,13 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                                 })
                                                         }, void 0, false, {
                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                            lineNumber: 326,
+                                                            lineNumber: 372,
                                                             columnNumber: 19
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                    lineNumber: 322,
+                                                    lineNumber: 368,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2573,7 +2839,7 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                             children: "Example:"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                            lineNumber: 347,
+                                                            lineNumber: 393,
                                                             columnNumber: 19
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2581,25 +2847,25 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                             children: "00000290522165318135 → 290522165318135"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                            lineNumber: 348,
+                                                            lineNumber: 394,
                                                             columnNumber: 19
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                    lineNumber: 346,
+                                                    lineNumber: 392,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                            lineNumber: 293,
+                                            lineNumber: 339,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                    lineNumber: 265,
+                                    lineNumber: 311,
                                     columnNumber: 11
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2617,7 +2883,7 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                             children: "Dual Barcode Mode"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                            lineNumber: 360,
+                                                            lineNumber: 406,
                                                             columnNumber: 17
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2625,13 +2891,13 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                             children: "Generate 2 versions with different dimensions"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                            lineNumber: 363,
+                                                            lineNumber: 409,
                                                             columnNumber: 17
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                    lineNumber: 359,
+                                                    lineNumber: 405,
                                                     columnNumber: 15
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$switch$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Switch"], {
@@ -2649,7 +2915,8 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                                 },
                                                                 dualFont: {
                                                                     family: config.font.family,
-                                                                    size: config.font.size
+                                                                    size: config.font.size,
+                                                                    autoAdjustFont: true
                                                                 }
                                                             });
                                                         } else {
@@ -2663,13 +2930,13 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                     }
                                                 }, void 0, false, {
                                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                    lineNumber: 365,
+                                                    lineNumber: 411,
                                                     columnNumber: 15
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                            lineNumber: 358,
+                                            lineNumber: 404,
                                             columnNumber: 13
                                         }, this),
                                         config.dualMode && config.dualDimensions && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$collapsible$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Collapsible"], {
@@ -2686,7 +2953,7 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                                     children: "Secondary Dimensions"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                                    lineNumber: 400,
+                                                                    lineNumber: 447,
                                                                     columnNumber: 23
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2694,13 +2961,13 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                                     children: "Each barcode will generate 2 files"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                                    lineNumber: 401,
+                                                                    lineNumber: 448,
                                                                     columnNumber: 23
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                            lineNumber: 399,
+                                                            lineNumber: 446,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2715,7 +2982,7 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                                             children: "Width"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                                            lineNumber: 405,
+                                                                            lineNumber: 452,
                                                                             columnNumber: 25
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
@@ -2734,13 +3001,13 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                                                 })
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                                            lineNumber: 408,
+                                                                            lineNumber: 455,
                                                                             columnNumber: 25
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                                    lineNumber: 404,
+                                                                    lineNumber: 451,
                                                                     columnNumber: 23
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2752,7 +3019,7 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                                             children: "Height"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                                            lineNumber: 427,
+                                                                            lineNumber: 474,
                                                                             columnNumber: 25
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
@@ -2771,19 +3038,19 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                                                 })
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                                            lineNumber: 430,
+                                                                            lineNumber: 477,
                                                                             columnNumber: 25
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                                    lineNumber: 426,
+                                                                    lineNumber: 473,
                                                                     columnNumber: 23
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                            lineNumber: 403,
+                                                            lineNumber: 450,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2794,7 +3061,7 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                                     children: "Secondary Font Settings"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                                    lineNumber: 452,
+                                                                    lineNumber: 499,
                                                                     columnNumber: 23
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2809,7 +3076,7 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                                                     children: "Font Family"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                                                    lineNumber: 455,
+                                                                                    lineNumber: 502,
                                                                                     columnNumber: 27
                                                                                 }, this),
                                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Select"], {
@@ -2826,12 +3093,12 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                                                             id: "secondary-font-family",
                                                                                             children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectValue"], {}, void 0, false, {
                                                                                                 fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                                                                lineNumber: 471,
+                                                                                                lineNumber: 518,
                                                                                                 columnNumber: 31
                                                                                             }, this)
                                                                                         }, void 0, false, {
                                                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                                                            lineNumber: 470,
+                                                                                            lineNumber: 517,
                                                                                             columnNumber: 29
                                                                                         }, this),
                                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectContent"], {
@@ -2840,24 +3107,24 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                                                                     children: font
                                                                                                 }, font, false, {
                                                                                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                                                                    lineNumber: 475,
+                                                                                                    lineNumber: 522,
                                                                                                     columnNumber: 33
                                                                                                 }, this))
                                                                                         }, void 0, false, {
                                                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                                                            lineNumber: 473,
+                                                                                            lineNumber: 520,
                                                                                             columnNumber: 29
                                                                                         }, this)
                                                                                     ]
                                                                                 }, void 0, true, {
                                                                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                                                    lineNumber: 458,
+                                                                                    lineNumber: 505,
                                                                                     columnNumber: 27
                                                                                 }, this)
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                                            lineNumber: 454,
+                                                                            lineNumber: 501,
                                                                             columnNumber: 25
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2869,7 +3136,7 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                                                     children: "Font Size (px)"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                                                    lineNumber: 483,
+                                                                                    lineNumber: 530,
                                                                                     columnNumber: 27
                                                                                 }, this),
                                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
@@ -2887,19 +3154,19 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                                                         })
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                                                    lineNumber: 486,
+                                                                                    lineNumber: 533,
                                                                                     columnNumber: 27
                                                                                 }, this)
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                                            lineNumber: 482,
+                                                                            lineNumber: 529,
                                                                             columnNumber: 25
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                                    lineNumber: 453,
+                                                                    lineNumber: 500,
                                                                     columnNumber: 23
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2913,40 +3180,162 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                                                         children: "BAR12345678"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                                        lineNumber: 505,
+                                                                        lineNumber: 552,
                                                                         columnNumber: 25
                                                                     }, this)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                                    lineNumber: 504,
+                                                                    lineNumber: 551,
+                                                                    columnNumber: 23
+                                                                }, this),
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                    className: "flex items-center justify-between pt-3",
+                                                                    children: [
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                            className: "space-y-0.5",
+                                                                            children: [
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Label"], {
+                                                                                    htmlFor: "dual-auto-adjust-font",
+                                                                                    className: "text-sm font-normal",
+                                                                                    children: "Auto-adjust font for small barcodes"
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
+                                                                                    lineNumber: 564,
+                                                                                    columnNumber: 27
+                                                                                }, this),
+                                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                                                    className: "text-xs text-muted-foreground",
+                                                                                    children: "Improves readability for barcodes < 1cm height"
+                                                                                }, void 0, false, {
+                                                                                    fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
+                                                                                    lineNumber: 567,
+                                                                                    columnNumber: 27
+                                                                                }, this)
+                                                                            ]
+                                                                        }, void 0, true, {
+                                                                            fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
+                                                                            lineNumber: 563,
+                                                                            columnNumber: 25
+                                                                        }, this),
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$switch$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Switch"], {
+                                                                            id: "dual-auto-adjust-font",
+                                                                            checked: config.dualFont?.autoAdjustFont ?? true,
+                                                                            onCheckedChange: (checked)=>setConfig({
+                                                                                    ...config,
+                                                                                    dualFont: {
+                                                                                        family: config.dualFont?.family || config.font.family,
+                                                                                        size: config.dualFont?.size || config.font.size,
+                                                                                        autoAdjustFont: checked
+                                                                                    }
+                                                                                })
+                                                                        }, void 0, false, {
+                                                                            fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
+                                                                            lineNumber: 569,
+                                                                            columnNumber: 25
+                                                                        }, this)
+                                                                    ]
+                                                                }, void 0, true, {
+                                                                    fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
+                                                                    lineNumber: 562,
                                                                     columnNumber: 23
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                            lineNumber: 451,
+                                                            lineNumber: 498,
                                                             columnNumber: 21
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                    lineNumber: 398,
+                                                    lineNumber: 445,
                                                     columnNumber: 19
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                                lineNumber: 397,
+                                                lineNumber: 444,
                                                 columnNumber: 17
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                            lineNumber: 396,
+                                            lineNumber: 443,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                    lineNumber: 357,
+                                    lineNumber: 403,
+                                    columnNumber: 11
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "space-y-4",
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "flex items-center justify-between",
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "space-y-0.5",
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Label"], {
+                                                            htmlFor: "continuous-mode",
+                                                            className: "text-sm font-normal",
+                                                            children: "Continuous Mode"
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
+                                                            lineNumber: 595,
+                                                            columnNumber: 17
+                                                        }, this),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                            className: "text-xs text-muted-foreground",
+                                                            children: "Single row layout for label roll printing"
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
+                                                            lineNumber: 598,
+                                                            columnNumber: 17
+                                                        }, this)
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
+                                                    lineNumber: 594,
+                                                    columnNumber: 15
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$switch$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Switch"], {
+                                                    id: "continuous-mode",
+                                                    checked: config.continuousMode || false,
+                                                    onCheckedChange: (checked)=>setConfig({
+                                                            ...config,
+                                                            continuousMode: checked
+                                                        })
+                                                }, void 0, false, {
+                                                    fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
+                                                    lineNumber: 600,
+                                                    columnNumber: 15
+                                                }, this)
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
+                                            lineNumber: 593,
+                                            columnNumber: 13
+                                        }, this),
+                                        config.continuousMode && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "p-3 bg-muted/50 rounded-lg border",
+                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                className: "text-xs text-muted-foreground",
+                                                children: "All barcodes will be arranged in a single horizontal row. Canvas width will be calculated automatically based on barcode count. Perfect for continuous label roll printers."
+                                            }, void 0, false, {
+                                                fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
+                                                lineNumber: 613,
+                                                columnNumber: 17
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
+                                            lineNumber: 612,
+                                            columnNumber: 15
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
+                                    lineNumber: 592,
                                     columnNumber: 11
                                 }, this)
                             ]
@@ -2969,17 +3358,17 @@ function StepTwo({ config, setConfig, barcodeData }) {
                                 barcodeData: barcodeData
                             }, void 0, false, {
                                 fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                                lineNumber: 527,
+                                lineNumber: 626,
                                 columnNumber: 11
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                            lineNumber: 526,
+                            lineNumber: 625,
                             columnNumber: 9
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-two.tsx",
-                        lineNumber: 525,
+                        lineNumber: 624,
                         columnNumber: 7
                     }, this)
                 ]
@@ -3223,7 +3612,11 @@ __turbopack_context__.s([
     "checkAPIHealth",
     ()=>checkAPIHealth,
     "generateBarcodesAPI",
-    ()=>generateBarcodesAPI
+    ()=>generateBarcodesAPI,
+    "generatePrintReadyPDF",
+    ()=>generatePrintReadyPDF,
+    "generatePrintReadyPNG",
+    ()=>generatePrintReadyPNG
 ]);
 const API_BASE_URL = ("TURBOPACK compile-time value", "http://localhost:4000") || "http://localhost:4000";
 const generateBarcodesAPI = async (request, onProgress)=>{
@@ -3276,6 +3669,110 @@ const generateBarcodesAPI = async (request, onProgress)=>{
     } catch (error) {
         console.error("API error:", error);
         throw new Error(error instanceof Error ? error.message : "Failed to generate barcodes via API");
+    }
+};
+const generatePrintReadyPNG = async (request, onProgress)=>{
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/barcode/generate-pdf`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(request)
+        });
+        if (!response.ok) {
+            const error = await response.json().catch(()=>({}));
+            throw new Error(error.message || `Server error: ${response.status}`);
+        }
+        // Get the total size from Content-Length header
+        const contentLength = response.headers.get("Content-Length");
+        const total = contentLength ? parseInt(contentLength, 10) : 0;
+        // Read the response body as a stream
+        const reader = response.body?.getReader();
+        if (!reader) {
+            throw new Error("Response body is not readable");
+        }
+        const chunks = [];
+        let receivedLength = 0;
+        while(true){
+            const { done, value } = await reader.read();
+            if (done) break;
+            chunks.push(value);
+            receivedLength += value.length;
+            // Report progress
+            if (total > 0 && onProgress) {
+                const progress = receivedLength / total * 100;
+                onProgress(progress);
+            }
+        }
+        // Combine chunks into single Uint8Array
+        const chunksAll = new Uint8Array(receivedLength);
+        let position = 0;
+        for (const chunk of chunks){
+            chunksAll.set(chunk, position);
+            position += chunk.length;
+        }
+        // Create blob from combined chunks
+        return new Blob([
+            chunksAll
+        ], {
+            type: "image/png"
+        });
+    } catch (error) {
+        console.error("API error:", error);
+        throw new Error(error instanceof Error ? error.message : "Failed to generate print-ready PNG via API");
+    }
+};
+const generatePrintReadyPDF = async (request, onProgress)=>{
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/barcode/generate-pdf-document`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(request)
+        });
+        if (!response.ok) {
+            const error = await response.json().catch(()=>({}));
+            throw new Error(error.message || `Server error: ${response.status}`);
+        }
+        // Get the total size from Content-Length header
+        const contentLength = response.headers.get("Content-Length");
+        const total = contentLength ? parseInt(contentLength, 10) : 0;
+        // Read the response body as a stream
+        const reader = response.body?.getReader();
+        if (!reader) {
+            throw new Error("Response body is not readable");
+        }
+        const chunks = [];
+        let receivedLength = 0;
+        while(true){
+            const { done, value } = await reader.read();
+            if (done) break;
+            chunks.push(value);
+            receivedLength += value.length;
+            // Report progress
+            if (total > 0 && onProgress) {
+                const progress = receivedLength / total * 100;
+                onProgress(progress);
+            }
+        }
+        // Combine chunks into single Uint8Array
+        const chunksAll = new Uint8Array(receivedLength);
+        let position = 0;
+        for (const chunk of chunks){
+            chunksAll.set(chunk, position);
+            position += chunk.length;
+        }
+        // Create blob from combined chunks
+        return new Blob([
+            chunksAll
+        ], {
+            type: "application/pdf"
+        });
+    } catch (error) {
+        console.error("API error:", error);
+        throw new Error(error instanceof Error ? error.message : "Failed to generate print-ready PDF via API");
     }
 };
 const checkAPIHealth = async ()=>{
@@ -3423,13 +3920,44 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barco
     // inches
     return Math.round(value * DPI);
 };
+/**
+ * Process barcode data by removing ignored digits
+ */ const processData = (data, configuration)=>{
+    const ignoreDigits = configuration.options.ignoreDigits;
+    if (!ignoreDigits || !ignoreDigits.enabled) {
+        return data;
+    }
+    const { position, count } = ignoreDigits;
+    if (position === "start") {
+        return data.slice(count);
+    } else {
+        return data.slice(0, -count);
+    }
+};
 const generate1DBarcode = (options)=>{
     const { data, configuration, filename } = options;
     try {
-        // Create a canvas element
-        const canvas = document.createElement("canvas");
+        // Process data to remove ignored digits
+        const processedData = processData(data, configuration);
+        // Calculate exact dimensions
         const width = convertToPixels(configuration.dimensions.width, configuration.dimensions.unit);
         const height = convertToPixels(configuration.dimensions.height, configuration.dimensions.unit);
+        // Check if vertical orientation
+        const isVertical = configuration.orientation === "vertical";
+        // When vertical, swap dimensions for generation, then rotate
+        const generateWidth = isVertical ? height : width;
+        const generateHeight = isVertical ? width : height;
+        // For small barcodes (< 1cm), make barcode bars smaller and text bigger for readability
+        // Only apply auto-adjustment if autoAdjustFont is true (default behavior for backward compatibility)
+        const heightCm = configuration.dimensions.unit === "cm" ? configuration.dimensions.height : configuration.dimensions.height * 2.54;
+        const isSmallBarcode = heightCm < 1;
+        const shouldAutoAdjust = configuration.font.autoAdjustFont !== false // true if undefined or explicitly true
+        ;
+        // Adjust barcode height to leave more room for text on small barcodes
+        const barcodeHeightMultiplier = isSmallBarcode && shouldAutoAdjust ? 0.4 : 0.5;
+        // Increase font size for small barcodes to improve readability
+        const adjustedFontSize = isSmallBarcode && shouldAutoAdjust ? Math.min(configuration.font.size * 1.3, 14) : configuration.font.size;
+        const adjustedTextMargin = isSmallBarcode && shouldAutoAdjust ? 6 : 16;
         // Map barcode type to JsBarcode format
         const formatMap = {
             code128: "CODE128",
@@ -3439,20 +3967,64 @@ const generate1DBarcode = (options)=>{
             code39: "CODE39"
         };
         const format = formatMap[configuration.type] || "CODE128";
-        // Generate barcode with JsBarcode
-        (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$jsbarcode$40$3$2e$12$2e$1$2f$node_modules$2f$jsbarcode$2f$bin$2f$JsBarcode$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"])(canvas, data, {
+        // Create temporary canvas for JsBarcode generation
+        const tempCanvas = document.createElement("canvas");
+        // Generate barcode on temporary canvas (use swapped dimensions for vertical)
+        (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$jsbarcode$40$3$2e$12$2e$1$2f$node_modules$2f$jsbarcode$2f$bin$2f$JsBarcode$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"])(tempCanvas, processedData, {
             format,
-            width: configuration.options.stretch ? width / 100 : 2,
-            height: configuration.options.stretch ? height * 0.7 : height * 0.5,
+            width: configuration.options.stretch ? generateWidth / 100 : 2,
+            height: configuration.options.stretch ? generateHeight * 0.7 : generateHeight * barcodeHeightMultiplier,
             displayValue: configuration.options.showText,
-            text: data,
+            text: processedData,
             font: configuration.font.family,
-            fontSize: configuration.font.size,
-            textMargin: 8,
+            fontSize: adjustedFontSize,
+            textMargin: adjustedTextMargin,
             margin: 10,
             background: "#ffffff",
             lineColor: "#000000"
         });
+        // Create intermediate canvas with swapped dimensions for vertical orientation
+        const intermediateCanvas = document.createElement("canvas");
+        intermediateCanvas.width = generateWidth;
+        intermediateCanvas.height = generateHeight;
+        // Draw the generated barcode onto intermediate canvas
+        const intermediateCtx = intermediateCanvas.getContext("2d");
+        if (intermediateCtx) {
+            // Fill with white background
+            intermediateCtx.fillStyle = "#ffffff";
+            intermediateCtx.fillRect(0, 0, generateWidth, generateHeight);
+            // Draw the barcode centered or stretched to fill
+            if (configuration.options.stretch) {
+                // Stretch to fill entire canvas
+                intermediateCtx.drawImage(tempCanvas, 0, 0, generateWidth, generateHeight);
+            } else {
+                // Center the barcode
+                const x = (generateWidth - tempCanvas.width) / 2;
+                const y = (generateHeight - tempCanvas.height) / 2;
+                intermediateCtx.drawImage(tempCanvas, x, y);
+            }
+        }
+        // Create final canvas with correct dimensions
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+            // Fill with white background
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, width, height);
+            if (isVertical) {
+                // Rotate 90 degrees clockwise for vertical orientation
+                ctx.save();
+                ctx.translate(width / 2, height / 2);
+                ctx.rotate(Math.PI / 2);
+                ctx.drawImage(intermediateCanvas, -generateWidth / 2, -generateHeight / 2);
+                ctx.restore();
+            } else {
+                // Draw directly for horizontal orientation
+                ctx.drawImage(intermediateCanvas, 0, 0);
+            }
+        }
         // Convert canvas to data URL
         const dataUrl = canvas.toDataURL("image/png");
         return {
@@ -3628,6 +4200,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barco
 var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$lucide$2d$react$40$0$2e$454$2e$0_react$40$19$2e$2$2e$0$2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$loader$2d$circle$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Loader2$3e$__ = __turbopack_context__.i("[project]/Desktop/Projects/Barcode/node_modules/.pnpm/lucide-react@0.454.0_react@19.2.0/node_modules/lucide-react/dist/esm/icons/loader-circle.js [app-ssr] (ecmascript) <export default as Loader2>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$lucide$2d$react$40$0$2e$454$2e$0_react$40$19$2e$2$2e$0$2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$check$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__CheckCircle2$3e$__ = __turbopack_context__.i("[project]/Desktop/Projects/Barcode/node_modules/.pnpm/lucide-react@0.454.0_react@19.2.0/node_modules/lucide-react/dist/esm/icons/circle-check.js [app-ssr] (ecmascript) <export default as CheckCircle2>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$lucide$2d$react$40$0$2e$454$2e$0_react$40$19$2e$2$2e$0$2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$alert$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__AlertCircle$3e$__ = __turbopack_context__.i("[project]/Desktop/Projects/Barcode/node_modules/.pnpm/lucide-react@0.454.0_react@19.2.0/node_modules/lucide-react/dist/esm/icons/circle-alert.js [app-ssr] (ecmascript) <export default as AlertCircle>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$lucide$2d$react$40$0$2e$454$2e$0_react$40$19$2e$2$2e$0$2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$file$2d$text$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__FileText$3e$__ = __turbopack_context__.i("[project]/Desktop/Projects/Barcode/node_modules/.pnpm/lucide-react@0.454.0_react@19.2.0/node_modules/lucide-react/dist/esm/icons/file-text.js [app-ssr] (ecmascript) <export default as FileText>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$lib$2f$hybridRouting$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/Projects/Barcode/frontend/lib/hybridRouting.ts [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$lib$2f$barcodeGenerator$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/Projects/Barcode/frontend/lib/barcodeGenerator.ts [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$lib$2f$zipGenerator$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/Projects/Barcode/frontend/lib/zipGenerator.ts [app-ssr] (ecmascript)");
@@ -3703,6 +4276,90 @@ function StepThree({ barcodeData, config, maxLimit }) {
             setErrorMessage(error instanceof Error ? error.message : "Failed to generate barcodes");
         }
     };
+    const handleGeneratePrintReady = async ()=>{
+        setIsGenerating(true);
+        setStatus("generating");
+        setProgress(0);
+        setErrorMessage("");
+        setGenerationMode("server");
+        try {
+            // Prepare layout config with continuous mode from barcode config
+            const layoutConfig = {
+                continuousMode: config.continuousMode
+            };
+            // Generate print-ready PNG (server-side only)
+            const blob = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$lib$2f$apiClient$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["generatePrintReadyPNG"])({
+                data: barcodeData,
+                configuration: config,
+                layoutConfig
+            }, (downloadProgress)=>{
+                setProgress(Math.min(95, downloadProgress));
+            });
+            // Download the PNG
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `barcodes_print_ready_${Date.now()}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            setProgress(100);
+            setStatus("success");
+            // Auto-close after 2 seconds
+            setTimeout(()=>{
+                setIsGenerating(false);
+                setStatus("idle");
+                setProgress(0);
+            }, 2000);
+        } catch (error) {
+            console.error("PNG generation error:", error);
+            setStatus("error");
+            setErrorMessage(error instanceof Error ? error.message : "Failed to generate print-ready PNG");
+        }
+    };
+    const handleGeneratePrintReadyPDF = async ()=>{
+        setIsGenerating(true);
+        setStatus("generating");
+        setProgress(0);
+        setErrorMessage("");
+        setGenerationMode("server");
+        try {
+            // Prepare layout config with continuous mode from barcode config
+            const layoutConfig = {
+                continuousMode: config.continuousMode
+            };
+            // Generate print-ready PDF (server-side only)
+            const blob = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$lib$2f$apiClient$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["generatePrintReadyPDF"])({
+                data: barcodeData,
+                configuration: config,
+                layoutConfig
+            }, (downloadProgress)=>{
+                setProgress(Math.min(95, downloadProgress));
+            });
+            // Download the PDF
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `barcodes_print_ready_${Date.now()}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            setProgress(100);
+            setStatus("success");
+            // Auto-close after 2 seconds
+            setTimeout(()=>{
+                setIsGenerating(false);
+                setStatus("idle");
+                setProgress(0);
+            }, 2000);
+        } catch (error) {
+            console.error("PDF generation error:", error);
+            setStatus("error");
+            setErrorMessage(error instanceof Error ? error.message : "Failed to generate print-ready PDF");
+        }
+    };
     const closeModal = ()=>{
         setIsGenerating(false);
         setStatus("idle");
@@ -3720,7 +4377,7 @@ function StepThree({ barcodeData, config, maxLimit }) {
                         children: "3"
                     }, void 0, false, {
                         fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
-                        lineNumber: 103,
+                        lineNumber: 205,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3731,7 +4388,7 @@ function StepThree({ barcodeData, config, maxLimit }) {
                                 children: "Generate barcodes"
                             }, void 0, false, {
                                 fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
-                                lineNumber: 107,
+                                lineNumber: 209,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3739,19 +4396,19 @@ function StepThree({ barcodeData, config, maxLimit }) {
                                 children: "Download your barcodes as images"
                             }, void 0, false, {
                                 fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
-                                lineNumber: 108,
+                                lineNumber: 210,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
-                        lineNumber: 106,
+                        lineNumber: 208,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
-                lineNumber: 102,
+                lineNumber: 204,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Card"], {
@@ -3774,7 +4431,7 @@ function StepThree({ barcodeData, config, maxLimit }) {
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
-                                            lineNumber: 118,
+                                            lineNumber: 220,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3782,7 +4439,7 @@ function StepThree({ barcodeData, config, maxLimit }) {
                                             children: getConfigSummary()
                                         }, void 0, false, {
                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
-                                            lineNumber: 121,
+                                            lineNumber: 223,
                                             columnNumber: 19
                                         }, this)
                                     ]
@@ -3791,7 +4448,7 @@ function StepThree({ barcodeData, config, maxLimit }) {
                                     children: "No data entered yet"
                                 }, void 0, false, {
                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
-                                    lineNumber: 124,
+                                    lineNumber: 226,
                                     columnNumber: 17
                                 }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                     className: "text-destructive",
@@ -3804,48 +4461,103 @@ function StepThree({ barcodeData, config, maxLimit }) {
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
-                                    lineNumber: 126,
+                                    lineNumber: 228,
                                     columnNumber: 17
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
-                                lineNumber: 115,
+                                lineNumber: 217,
                                 columnNumber: 13
                             }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
-                                size: "lg",
-                                disabled: !isReady,
-                                onClick: handleGenerate,
-                                className: "w-full lg:w-auto lg:min-w-[200px]",
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "flex flex-col sm:flex-row gap-2 w-full lg:w-auto",
                                 children: [
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$lucide$2d$react$40$0$2e$454$2e$0_react$40$19$2e$2$2e$0$2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$download$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Download$3e$__["Download"], {
-                                        className: "h-4 w-4 mr-2"
-                                    }, void 0, false, {
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
+                                        size: "lg",
+                                        disabled: !isReady,
+                                        onClick: handleGenerate,
+                                        className: "w-full lg:w-auto lg:min-w-[200px]",
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$lucide$2d$react$40$0$2e$454$2e$0_react$40$19$2e$2$2e$0$2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$download$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Download$3e$__["Download"], {
+                                                className: "h-4 w-4 mr-2"
+                                            }, void 0, false, {
+                                                fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
+                                                lineNumber: 240,
+                                                columnNumber: 17
+                                            }, this),
+                                            isReady ? `Generate ZIP` : "Cannot Generate"
+                                        ]
+                                    }, void 0, true, {
                                         fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
-                                        lineNumber: 137,
+                                        lineNumber: 234,
                                         columnNumber: 15
                                     }, this),
-                                    isReady ? `Generate ${count} Barcode${count !== 1 ? "s" : ""}` : "Cannot Generate"
+                                    count >= 20 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
+                                                size: "lg",
+                                                variant: "outline",
+                                                disabled: !isReady,
+                                                onClick: handleGeneratePrintReady,
+                                                className: "w-full lg:w-auto lg:min-w-[200px]",
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$lucide$2d$react$40$0$2e$454$2e$0_react$40$19$2e$2$2e$0$2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$file$2d$text$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__FileText$3e$__["FileText"], {
+                                                        className: "h-4 w-4 mr-2"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
+                                                        lineNumber: 252,
+                                                        columnNumber: 21
+                                                    }, this),
+                                                    "Print-Ready PNG"
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
+                                                lineNumber: 245,
+                                                columnNumber: 19
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
+                                                size: "lg",
+                                                variant: "outline",
+                                                disabled: !isReady,
+                                                onClick: handleGeneratePrintReadyPDF,
+                                                className: "w-full lg:w-auto lg:min-w-[200px]",
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$lucide$2d$react$40$0$2e$454$2e$0_react$40$19$2e$2$2e$0$2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$file$2d$text$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__FileText$3e$__["FileText"], {
+                                                        className: "h-4 w-4 mr-2"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
+                                                        lineNumber: 262,
+                                                        columnNumber: 21
+                                                    }, this),
+                                                    "Print-Ready PDF"
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
+                                                lineNumber: 255,
+                                                columnNumber: 19
+                                            }, this)
+                                        ]
+                                    }, void 0, true)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
-                                lineNumber: 131,
+                                lineNumber: 233,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
-                        lineNumber: 114,
+                        lineNumber: 216,
                         columnNumber: 11
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
-                    lineNumber: 113,
+                    lineNumber: 215,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
-                lineNumber: 112,
+                lineNumber: 214,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Dialog"], {
@@ -3865,25 +4577,26 @@ function StepThree({ barcodeData, config, maxLimit }) {
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
-                                    lineNumber: 148,
+                                    lineNumber: 276,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DialogDescription"], {
                                     children: [
                                         status === "determining" && "Checking API availability and optimizing generation...",
-                                        status === "generating" && `Using ${generationMode === "client" ? "client-side" : "server-side"} generation`,
+                                        status === "generating" && generationMode === "server" && "Generating print-ready PDF with barcodes...",
+                                        status === "generating" && generationMode !== "server" && `Using ${generationMode === "client" ? "client-side" : "server-side"} generation`,
                                         status === "success" && "Your barcodes have been generated and downloaded.",
                                         status === "error" && errorMessage
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
-                                    lineNumber: 154,
+                                    lineNumber: 282,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
-                            lineNumber: 147,
+                            lineNumber: 275,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3894,12 +4607,12 @@ function StepThree({ barcodeData, config, maxLimit }) {
                                     className: "h-16 w-16 text-destructive"
                                 }, void 0, false, {
                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
-                                    lineNumber: 166,
+                                    lineNumber: 296,
                                     columnNumber: 17
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
-                                lineNumber: 165,
+                                lineNumber: 295,
                                 columnNumber: 15
                             }, this) : status === "success" ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 className: "flex items-center justify-center py-8",
@@ -3907,12 +4620,12 @@ function StepThree({ barcodeData, config, maxLimit }) {
                                     className: "h-16 w-16 text-green-500"
                                 }, void 0, false, {
                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
-                                    lineNumber: 170,
+                                    lineNumber: 300,
                                     columnNumber: 17
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
-                                lineNumber: 169,
+                                lineNumber: 299,
                                 columnNumber: 15
                             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
                                 children: [
@@ -3922,12 +4635,12 @@ function StepThree({ barcodeData, config, maxLimit }) {
                                             className: "h-16 w-16 animate-spin text-primary"
                                         }, void 0, false, {
                                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
-                                            lineNumber: 175,
+                                            lineNumber: 305,
                                             columnNumber: 19
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
-                                        lineNumber: 174,
+                                        lineNumber: 304,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3938,7 +4651,7 @@ function StepThree({ barcodeData, config, maxLimit }) {
                                                 className: "w-full"
                                             }, void 0, false, {
                                                 fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
-                                                lineNumber: 178,
+                                                lineNumber: 308,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3949,20 +4662,20 @@ function StepThree({ barcodeData, config, maxLimit }) {
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
-                                                lineNumber: 179,
+                                                lineNumber: 309,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
-                                        lineNumber: 177,
+                                        lineNumber: 307,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true)
                         }, void 0, false, {
                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
-                            lineNumber: 163,
+                            lineNumber: 293,
                             columnNumber: 11
                         }, this),
                         status === "error" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -3971,24 +4684,24 @@ function StepThree({ barcodeData, config, maxLimit }) {
                             children: "Close"
                         }, void 0, false, {
                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
-                            lineNumber: 186,
+                            lineNumber: 316,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
-                    lineNumber: 146,
+                    lineNumber: 274,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
-                lineNumber: 145,
+                lineNumber: 273,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/Desktop/Projects/Barcode/frontend/components/step-three.tsx",
-        lineNumber: 100,
+        lineNumber: 202,
         columnNumber: 5
     }, this);
 }
@@ -4044,7 +4757,9 @@ function Home() {
                 count: 5
             }
         },
-        dualMode: false
+        dualMode: false,
+        orientation: "horizontal",
+        continuousMode: false
     });
     // Load saved config and max limit from localStorage on mount
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
@@ -4070,7 +4785,7 @@ function Home() {
                                     children: "Bulk Barcode Generator"
                                 }, void 0, false, {
                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/app/page.tsx",
-                                    lineNumber: 57,
+                                    lineNumber: 59,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -4078,13 +4793,13 @@ function Home() {
                                     children: "Generate professional barcodes in bulk"
                                 }, void 0, false, {
                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/app/page.tsx",
-                                    lineNumber: 58,
+                                    lineNumber: 60,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/Desktop/Projects/Barcode/frontend/app/page.tsx",
-                            lineNumber: 56,
+                            lineNumber: 58,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -4097,14 +4812,14 @@ function Home() {
                                     className: "h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
                                 }, void 0, false, {
                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/app/page.tsx",
-                                    lineNumber: 66,
+                                    lineNumber: 68,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$lucide$2d$react$40$0$2e$454$2e$0_react$40$19$2e$2$2e$0$2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$moon$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Moon$3e$__["Moon"], {
                                     className: "absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
                                 }, void 0, false, {
                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/app/page.tsx",
-                                    lineNumber: 67,
+                                    lineNumber: 69,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -4112,24 +4827,24 @@ function Home() {
                                     children: "Toggle theme"
                                 }, void 0, false, {
                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/app/page.tsx",
-                                    lineNumber: 68,
+                                    lineNumber: 70,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/Desktop/Projects/Barcode/frontend/app/page.tsx",
-                            lineNumber: 60,
+                            lineNumber: 62,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/Desktop/Projects/Barcode/frontend/app/page.tsx",
-                    lineNumber: 55,
+                    lineNumber: 57,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/Desktop/Projects/Barcode/frontend/app/page.tsx",
-                lineNumber: 54,
+                lineNumber: 56,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("main", {
@@ -4142,7 +4857,7 @@ function Home() {
                         setMaxLimit: setMaxLimit
                     }, void 0, false, {
                         fileName: "[project]/Desktop/Projects/Barcode/frontend/app/page.tsx",
-                        lineNumber: 75,
+                        lineNumber: 77,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$step$2d$two$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["StepTwo"], {
@@ -4151,7 +4866,7 @@ function Home() {
                         barcodeData: barcodeData
                     }, void 0, false, {
                         fileName: "[project]/Desktop/Projects/Barcode/frontend/app/page.tsx",
-                        lineNumber: 81,
+                        lineNumber: 83,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$step$2d$three$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["StepThree"], {
@@ -4160,19 +4875,19 @@ function Home() {
                         maxLimit: maxLimit
                     }, void 0, false, {
                         fileName: "[project]/Desktop/Projects/Barcode/frontend/app/page.tsx",
-                        lineNumber: 82,
+                        lineNumber: 84,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/Desktop/Projects/Barcode/frontend/app/page.tsx",
-                lineNumber: 74,
+                lineNumber: 76,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/Desktop/Projects/Barcode/frontend/app/page.tsx",
-        lineNumber: 52,
+        lineNumber: 54,
         columnNumber: 5
     }, this);
 }

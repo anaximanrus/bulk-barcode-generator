@@ -25,16 +25,59 @@ const convertToPixels = (value: number, unit: "cm" | "inches"): number => {
 }
 
 /**
+ * Process barcode data by removing ignored digits
+ */
+const processData = (data: string, configuration: BarcodeConfig): string => {
+  const ignoreDigits = configuration.options.ignoreDigits
+  if (!ignoreDigits || !ignoreDigits.enabled) {
+    return data
+  }
+
+  const { position, count } = ignoreDigits
+
+  if (position === "start") {
+    return data.slice(count)
+  } else {
+    return data.slice(0, -count)
+  }
+}
+
+/**
  * Generate a 1D barcode (Code128, EAN-13, EAN-8, UPC-A, Code39)
  */
 export const generate1DBarcode = (options: BarcodeGenerationOptions): GeneratedBarcode | null => {
   const { data, configuration, filename } = options
 
   try {
-    // Create a canvas element
-    const canvas = document.createElement("canvas")
+    // Process data to remove ignored digits
+    const processedData = processData(data, configuration)
+
+    // Calculate exact dimensions
     const width = convertToPixels(configuration.dimensions.width, configuration.dimensions.unit)
     const height = convertToPixels(configuration.dimensions.height, configuration.dimensions.unit)
+
+    // Check if vertical orientation
+    const isVertical = configuration.orientation === "vertical"
+
+    // When vertical, swap dimensions for generation, then rotate
+    const generateWidth = isVertical ? height : width
+    const generateHeight = isVertical ? width : height
+
+    // For small barcodes (< 1cm), make barcode bars smaller and text bigger for readability
+    // Only apply auto-adjustment if autoAdjustFont is true (default behavior for backward compatibility)
+    const heightCm = configuration.dimensions.unit === "cm"
+      ? configuration.dimensions.height
+      : configuration.dimensions.height * 2.54
+    const isSmallBarcode = heightCm < 1
+    const shouldAutoAdjust = configuration.font.autoAdjustFont !== false // true if undefined or explicitly true
+
+    // Adjust barcode height to leave more room for text on small barcodes
+    const barcodeHeightMultiplier = isSmallBarcode && shouldAutoAdjust ? 0.4 : 0.5
+    // Increase font size for small barcodes to improve readability
+    const adjustedFontSize = isSmallBarcode && shouldAutoAdjust
+      ? Math.min(configuration.font.size * 1.3, 14)
+      : configuration.font.size
+    const adjustedTextMargin = isSmallBarcode && shouldAutoAdjust ? 6 : 16
 
     // Map barcode type to JsBarcode format
     const formatMap: Record<string, string> = {
@@ -47,20 +90,71 @@ export const generate1DBarcode = (options: BarcodeGenerationOptions): GeneratedB
 
     const format = formatMap[configuration.type] || "CODE128"
 
-    // Generate barcode with JsBarcode
-    JsBarcode(canvas, data, {
+    // Create temporary canvas for JsBarcode generation
+    const tempCanvas = document.createElement("canvas")
+
+    // Generate barcode on temporary canvas (use swapped dimensions for vertical)
+    JsBarcode(tempCanvas, processedData, {
       format,
-      width: configuration.options.stretch ? width / 100 : 2,
-      height: configuration.options.stretch ? height * 0.7 : height * 0.5,
+      width: configuration.options.stretch ? generateWidth / 100 : 2,
+      height: configuration.options.stretch ? generateHeight * 0.7 : generateHeight * barcodeHeightMultiplier,
       displayValue: configuration.options.showText,
-      text: data,
+      text: processedData,
       font: configuration.font.family,
-      fontSize: configuration.font.size,
-      textMargin: 8,
+      fontSize: adjustedFontSize,
+      textMargin: adjustedTextMargin,
       margin: 10,
       background: "#ffffff",
       lineColor: "#000000",
     })
+
+    // Create intermediate canvas with swapped dimensions for vertical orientation
+    const intermediateCanvas = document.createElement("canvas")
+    intermediateCanvas.width = generateWidth
+    intermediateCanvas.height = generateHeight
+
+    // Draw the generated barcode onto intermediate canvas
+    const intermediateCtx = intermediateCanvas.getContext("2d")
+    if (intermediateCtx) {
+      // Fill with white background
+      intermediateCtx.fillStyle = "#ffffff"
+      intermediateCtx.fillRect(0, 0, generateWidth, generateHeight)
+
+      // Draw the barcode centered or stretched to fill
+      if (configuration.options.stretch) {
+        // Stretch to fill entire canvas
+        intermediateCtx.drawImage(tempCanvas, 0, 0, generateWidth, generateHeight)
+      } else {
+        // Center the barcode
+        const x = (generateWidth - tempCanvas.width) / 2
+        const y = (generateHeight - tempCanvas.height) / 2
+        intermediateCtx.drawImage(tempCanvas, x, y)
+      }
+    }
+
+    // Create final canvas with correct dimensions
+    const canvas = document.createElement("canvas")
+    canvas.width = width
+    canvas.height = height
+
+    const ctx = canvas.getContext("2d")
+    if (ctx) {
+      // Fill with white background
+      ctx.fillStyle = "#ffffff"
+      ctx.fillRect(0, 0, width, height)
+
+      if (isVertical) {
+        // Rotate 90 degrees clockwise for vertical orientation
+        ctx.save()
+        ctx.translate(width / 2, height / 2)
+        ctx.rotate(Math.PI / 2)
+        ctx.drawImage(intermediateCanvas, -generateWidth / 2, -generateHeight / 2)
+        ctx.restore()
+      } else {
+        // Draw directly for horizontal orientation
+        ctx.drawImage(intermediateCanvas, 0, 0)
+      }
+    }
 
     // Convert canvas to data URL
     const dataUrl = canvas.toDataURL("image/png")

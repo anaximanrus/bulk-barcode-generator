@@ -2,6 +2,8 @@ export type BarcodeType = "code128" | "qr" | "ean13" | "ean8" | "upca" | "code39
 
 export type UnitType = "cm" | "inches"
 
+export type OrientationType = "horizontal" | "vertical"
+
 export interface Dimensions {
   width: number
   height: number
@@ -11,6 +13,7 @@ export interface Dimensions {
 export interface FontConfig {
   family: string
   size: number
+  autoAdjustFont?: boolean
 }
 
 export interface IgnoreDigits {
@@ -33,4 +36,6 @@ export interface BarcodeConfig {
   dualMode: boolean
   dualDimensions?: Dimensions
   dualFont?: FontConfig
+  orientation?: OrientationType
+  continuousMode?: boolean
 }

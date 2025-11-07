@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 10, "column": 0}, "map": {"version":3,"sources":["file:///Users/umut-macbook/Desktop/Projects/Barcode/frontend/components/theme-provider.tsx"],"sourcesContent":["\"use client\"\n\nimport type * as React from \"react\"\nimport { ThemeProvider as NextThemesProvider } from \"next-themes\"\n\nexport function ThemeProvider({ children, ...props }: React.ComponentProps<typeof NextThemesProvider>) {\n  return <NextThemesProvider {...props}>{children}</NextThemesProvider>\n}\n"],"names":[],"mappings":";;;;;AAGA;AAHA;;;AAKO,SAAS,cAAc,EAAE,QAAQ,EAAE,GAAG,OAAwD;IACnG,qBAAO,+YAAC,2UAAkB;QAAE,GAAG,KAAK;kBAAG;;;;;;AACzC","debugId":null}}]
+}
