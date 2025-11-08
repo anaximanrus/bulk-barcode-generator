@@ -1571,13 +1571,22 @@ function SingleBarcodePreview({ config, dimensions, label, sampleData, fontConfi
         if (!canvasRef.current) return;
         try {
             const canvas = canvasRef.current;
-            const width = convertToPixels(dimensions.width, dimensions.unit);
-            const height = convertToPixels(dimensions.height, dimensions.unit);
+            // Calculate dimensions based on barcode size for variable DPI
+            const heightCm = dimensions.unit === "cm" ? dimensions.height : dimensions.height * 2.54;
+            const isSmallBarcode = heightCm < 1;
+            // Use 3x DPI (288) for small barcodes to improve text sharpness
+            const DPI = isSmallBarcode ? 288 : 96;
+            // Convert to pixels at appropriate DPI
+            const width = dimensions.unit === "cm" ? Math.round(dimensions.width / 2.54 * DPI) : Math.round(dimensions.width * DPI);
+            const height = dimensions.unit === "cm" ? Math.round(dimensions.height / 2.54 * DPI) : Math.round(dimensions.height * DPI);
             // Check if vertical orientation
             const isVertical = config.orientation === "vertical";
-            // When vertical, swap dimensions for generation, then rotate
-            const generateWidth = isVertical ? height : width;
-            const generateHeight = isVertical ? width : height;
+            // Use original dimensions for generation, then rotate
+            const generateWidth = width;
+            const generateHeight = height;
+            // For small barcodes, adjust font for better readability
+            const shouldAutoAdjust = activeFont.autoAdjustFont !== false;
+            const adjustedFontSize = isSmallBarcode && shouldAutoAdjust ? Math.max(activeFont.size * 0.7, 6) : activeFont.size;
             // Map barcode type to JsBarcode format
             const formatMap = {
                 code128: "CODE128",
@@ -1589,15 +1598,16 @@ function SingleBarcodePreview({ config, dimensions, label, sampleData, fontConfi
             const format = formatMap[config.type] || "CODE128";
             // Create temporary canvas for JsBarcode generation
             const tempCanvas = document.createElement("canvas");
-            // Generate barcode on temporary canvas (use swapped dimensions for vertical)
+            // Generate barcode on temporary canvas
+            // Use consistent height (90%) regardless of stretch mode - stretch only affects rendering
             (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$jsbarcode$40$3$2e$12$2e$1$2f$node_modules$2f$jsbarcode$2f$bin$2f$JsBarcode$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"])(tempCanvas, processedData, {
                 format,
                 width: config.options.stretch ? generateWidth / 100 : 2,
-                height: config.options.stretch ? generateHeight * 0.7 : generateHeight * 0.5,
+                height: generateHeight * 0.9,
                 displayValue: config.options.showText,
                 text: processedData,
                 font: activeFont.family,
-                fontSize: activeFont.size,
+                fontSize: adjustedFontSize,
                 textMargin: 8,
                 margin: 10,
                 background: "#ffffff",
@@ -1624,26 +1634,44 @@ function SingleBarcodePreview({ config, dimensions, label, sampleData, fontConfi
                     intermediateCtx.drawImage(tempCanvas, x, y);
                 }
             }
-            // Set our canvas to exact dimensions
-            canvas.width = width;
-            canvas.height = height;
-            // Draw the generated barcode onto our fixed-size canvas
+            // Create canvas for rotation if needed
+            let rotationCanvas = intermediateCanvas;
+            if (isVertical) {
+                rotationCanvas = document.createElement("canvas");
+                rotationCanvas.width = generateHeight;
+                rotationCanvas.height = generateWidth;
+                const rotCtx = rotationCanvas.getContext("2d");
+                if (rotCtx) {
+                    rotCtx.fillStyle = "#ffffff";
+                    rotCtx.fillRect(0, 0, rotationCanvas.width, rotationCanvas.height);
+                    rotCtx.save();
+                    rotCtx.translate(rotationCanvas.width / 2, rotationCanvas.height / 2);
+                    rotCtx.rotate(Math.PI / 2);
+                    rotCtx.drawImage(intermediateCanvas, -generateWidth / 2, -generateHeight / 2);
+                    rotCtx.restore();
+                }
+            }
+            // For small barcodes, downscale from high DPI (288) to standard DPI (96) for consistency
+            let finalCanvas = rotationCanvas;
+            if (isSmallBarcode) {
+                const finalWidth = dimensions.unit === "cm" ? Math.round(dimensions.width / 2.54 * 96) : Math.round(dimensions.width * 96);
+                const finalHeight = dimensions.unit === "cm" ? Math.round(dimensions.height / 2.54 * 96) : Math.round(dimensions.height * 96);
+                finalCanvas = document.createElement("canvas");
+                finalCanvas.width = isVertical ? finalHeight : finalWidth;
+                finalCanvas.height = isVertical ? finalWidth : finalHeight;
+                const finalCtx = finalCanvas.getContext("2d");
+                if (finalCtx) {
+                    finalCtx.imageSmoothingEnabled = true;
+                    finalCtx.imageSmoothingQuality = 'high';
+                    finalCtx.drawImage(rotationCanvas, 0, 0, finalCanvas.width, finalCanvas.height);
+                }
+            }
+            // Set our canvas to final dimensions and draw
+            canvas.width = finalCanvas.width;
+            canvas.height = finalCanvas.height;
             const ctx = canvas.getContext("2d");
             if (ctx) {
-                // Fill with white background
-                ctx.fillStyle = "#ffffff";
-                ctx.fillRect(0, 0, width, height);
-                if (isVertical) {
-                    // Rotate 90 degrees clockwise for vertical orientation
-                    ctx.save();
-                    ctx.translate(width / 2, height / 2);
-                    ctx.rotate(Math.PI / 2);
-                    ctx.drawImage(intermediateCanvas, -generateWidth / 2, -generateHeight / 2);
-                    ctx.restore();
-                } else {
-                    // Draw directly for horizontal orientation
-                    ctx.drawImage(intermediateCanvas, 0, 0);
-                }
+                ctx.drawImage(finalCanvas, 0, 0);
             }
             setError("");
         } catch (err) {
@@ -1669,7 +1697,7 @@ function SingleBarcodePreview({ config, dimensions, label, sampleData, fontConfi
                         children: label
                     }, void 0, false, {
                         fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                        lineNumber: 170,
+                        lineNumber: 217,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1683,13 +1711,13 @@ function SingleBarcodePreview({ config, dimensions, label, sampleData, fontConfi
                         ]
                     }, void 0, true, {
                         fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                        lineNumber: 171,
+                        lineNumber: 218,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                lineNumber: 169,
+                lineNumber: 216,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1705,7 +1733,7 @@ function SingleBarcodePreview({ config, dimensions, label, sampleData, fontConfi
                             children: "Preview Error"
                         }, void 0, false, {
                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                            lineNumber: 182,
+                            lineNumber: 229,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1713,13 +1741,13 @@ function SingleBarcodePreview({ config, dimensions, label, sampleData, fontConfi
                             children: error
                         }, void 0, false, {
                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                            lineNumber: 183,
+                            lineNumber: 230,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                    lineNumber: 181,
+                    lineNumber: 228,
                     columnNumber: 11
                 }, this) : config.type === "qr" ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: `flex flex-col items-center gap-2 ${actualSize ? "border-2 border-primary" : ""}`,
@@ -1734,7 +1762,7 @@ function SingleBarcodePreview({ config, dimensions, label, sampleData, fontConfi
                             includeMargin: true
                         }, void 0, false, {
                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                            lineNumber: 190,
+                            lineNumber: 237,
                             columnNumber: 13
                         }, this),
                         config.options.showText && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1746,13 +1774,13 @@ function SingleBarcodePreview({ config, dimensions, label, sampleData, fontConfi
                             children: processedData
                         }, void 0, false, {
                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                            lineNumber: 197,
+                            lineNumber: 244,
                             columnNumber: 15
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                    lineNumber: 186,
+                    lineNumber: 233,
                     columnNumber: 11
                 }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("canvas", {
                     ref: canvasRef,
@@ -1762,12 +1790,12 @@ function SingleBarcodePreview({ config, dimensions, label, sampleData, fontConfi
                     }
                 }, void 0, false, {
                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                    lineNumber: 209,
+                    lineNumber: 256,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                lineNumber: 176,
+                lineNumber: 223,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1781,7 +1809,7 @@ function SingleBarcodePreview({ config, dimensions, label, sampleData, fontConfi
                                     children: "Original:"
                                 }, void 0, false, {
                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                                    lineNumber: 221,
+                                    lineNumber: 268,
                                     columnNumber: 15
                                 }, this),
                                 " ",
@@ -1789,7 +1817,7 @@ function SingleBarcodePreview({ config, dimensions, label, sampleData, fontConfi
                             ]
                         }, void 0, true, {
                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                            lineNumber: 220,
+                            lineNumber: 267,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1799,7 +1827,7 @@ function SingleBarcodePreview({ config, dimensions, label, sampleData, fontConfi
                                     children: "After Ignore Digits:"
                                 }, void 0, false, {
                                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                                    lineNumber: 224,
+                                    lineNumber: 271,
                                     columnNumber: 15
                                 }, this),
                                 " ",
@@ -1807,7 +1835,7 @@ function SingleBarcodePreview({ config, dimensions, label, sampleData, fontConfi
                             ]
                         }, void 0, true, {
                             fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                            lineNumber: 223,
+                            lineNumber: 270,
                             columnNumber: 13
                         }, this)
                     ]
@@ -1818,18 +1846,18 @@ function SingleBarcodePreview({ config, dimensions, label, sampleData, fontConfi
                     ]
                 }, void 0, true, {
                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                    lineNumber: 228,
+                    lineNumber: 275,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                lineNumber: 217,
+                lineNumber: 264,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-        lineNumber: 168,
+        lineNumber: 215,
         columnNumber: 5
     }, this);
 }
@@ -1869,7 +1897,7 @@ function BarcodePreview({ config, barcodeData }) {
                                 children: "Preview showing:"
                             }, void 0, false, {
                                 fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                                lineNumber: 266,
+                                lineNumber: 313,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1880,13 +1908,13 @@ function BarcodePreview({ config, barcodeData }) {
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                                lineNumber: 267,
+                                lineNumber: 314,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                        lineNumber: 265,
+                        lineNumber: 312,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1897,7 +1925,7 @@ function BarcodePreview({ config, barcodeData }) {
                                 children: "Preview Mode:"
                             }, void 0, false, {
                                 fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                                lineNumber: 272,
+                                lineNumber: 319,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1911,7 +1939,7 @@ function BarcodePreview({ config, barcodeData }) {
                                         children: "Fit to Container"
                                     }, void 0, false, {
                                         fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                                        lineNumber: 274,
+                                        lineNumber: 321,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$frontend$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -1922,25 +1950,25 @@ function BarcodePreview({ config, barcodeData }) {
                                         children: "Actual Size"
                                     }, void 0, false, {
                                         fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                                        lineNumber: 282,
+                                        lineNumber: 329,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                                lineNumber: 273,
+                                lineNumber: 320,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                        lineNumber: 271,
+                        lineNumber: 318,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                lineNumber: 263,
+                lineNumber: 310,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(SingleBarcodePreview, {
@@ -1951,7 +1979,7 @@ function BarcodePreview({ config, barcodeData }) {
                 actualSize: actualSize
             }, void 0, false, {
                 fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                lineNumber: 295,
+                lineNumber: 342,
                 columnNumber: 7
             }, this),
             config.dualMode && config.dualDimensions && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$next$40$16$2e$0$2e$0_react$2d$dom$40$19$2e$2$2e$0_react$40$19$2e$2$2e$0_$5f$react$40$19$2e$2$2e$0$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
@@ -1966,19 +1994,19 @@ function BarcodePreview({ config, barcodeData }) {
                         actualSize: actualSize
                     }, void 0, false, {
                         fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                        lineNumber: 307,
+                        lineNumber: 354,
                         columnNumber: 13
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-                    lineNumber: 306,
+                    lineNumber: 353,
                     columnNumber: 11
                 }, this)
             }, void 0, false)
         ]
     }, void 0, true, {
         fileName: "[project]/Desktop/Projects/Barcode/frontend/components/barcode-preview.tsx",
-        lineNumber: 261,
+        lineNumber: 308,
         columnNumber: 5
     }, this);
 }
@@ -3939,24 +3967,26 @@ const generate1DBarcode = (options)=>{
     try {
         // Process data to remove ignored digits
         const processedData = processData(data, configuration);
-        // Calculate exact dimensions
-        const width = convertToPixels(configuration.dimensions.width, configuration.dimensions.unit);
-        const height = convertToPixels(configuration.dimensions.height, configuration.dimensions.unit);
-        // Check if vertical orientation
-        const isVertical = configuration.orientation === "vertical";
-        // When vertical, swap dimensions for generation, then rotate
-        const generateWidth = isVertical ? height : width;
-        const generateHeight = isVertical ? width : height;
-        // For small barcodes (< 1cm), make barcode bars smaller and text bigger for readability
-        // Only apply auto-adjustment if autoAdjustFont is true (default behavior for backward compatibility)
+        // Calculate dimensions based on barcode size for variable DPI
         const heightCm = configuration.dimensions.unit === "cm" ? configuration.dimensions.height : configuration.dimensions.height * 2.54;
         const isSmallBarcode = heightCm < 1;
+        // Use 3x DPI (288) for small barcodes to improve text sharpness
+        const DPI = isSmallBarcode ? 288 : 96;
+        // Convert to pixels at appropriate DPI
+        const width = configuration.dimensions.unit === "cm" ? Math.round(configuration.dimensions.width / 2.54 * DPI) : Math.round(configuration.dimensions.width * DPI);
+        const height = configuration.dimensions.unit === "cm" ? Math.round(configuration.dimensions.height / 2.54 * DPI) : Math.round(configuration.dimensions.height * DPI);
+        // Check if vertical orientation
+        const isVertical = configuration.orientation === "vertical";
+        // Use original dimensions for generation, then rotate
+        const generateWidth = width;
+        const generateHeight = height;
+        // For small barcodes (< 1cm), adjust font and spacing for better readability
+        // Only apply auto-adjustment if autoAdjustFont is true (default behavior for backward compatibility)
         const shouldAutoAdjust = configuration.font.autoAdjustFont !== false // true if undefined or explicitly true
         ;
-        // Adjust barcode height to leave more room for text on small barcodes
-        const barcodeHeightMultiplier = isSmallBarcode && shouldAutoAdjust ? 0.4 : 0.5;
-        // Increase font size for small barcodes to improve readability
-        const adjustedFontSize = isSmallBarcode && shouldAutoAdjust ? Math.min(configuration.font.size * 1.3, 14) : configuration.font.size;
+        // Reduce font size for small barcodes to fit more pixels per character (improves sharpness)
+        const adjustedFontSize = isSmallBarcode && shouldAutoAdjust ? Math.max(configuration.font.size * 0.7, 6) // Scale down to 70%, minimum 6px
+         : configuration.font.size;
         const adjustedTextMargin = isSmallBarcode && shouldAutoAdjust ? 6 : 16;
         // Map barcode type to JsBarcode format
         const formatMap = {
@@ -3969,11 +3999,12 @@ const generate1DBarcode = (options)=>{
         const format = formatMap[configuration.type] || "CODE128";
         // Create temporary canvas for JsBarcode generation
         const tempCanvas = document.createElement("canvas");
-        // Generate barcode on temporary canvas (use swapped dimensions for vertical)
+        // Generate barcode on temporary canvas
+        // Use consistent height (90%) regardless of stretch mode - stretch only affects rendering
         (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$Projects$2f$Barcode$2f$node_modules$2f2e$pnpm$2f$jsbarcode$40$3$2e$12$2e$1$2f$node_modules$2f$jsbarcode$2f$bin$2f$JsBarcode$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"])(tempCanvas, processedData, {
             format,
             width: configuration.options.stretch ? generateWidth / 100 : 2,
-            height: configuration.options.stretch ? generateHeight * 0.7 : generateHeight * barcodeHeightMultiplier,
+            height: generateHeight * 0.9,
             displayValue: configuration.options.showText,
             text: processedData,
             font: configuration.font.family,
@@ -4004,29 +4035,40 @@ const generate1DBarcode = (options)=>{
                 intermediateCtx.drawImage(tempCanvas, x, y);
             }
         }
-        // Create final canvas with correct dimensions
-        const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext("2d");
-        if (ctx) {
-            // Fill with white background
-            ctx.fillStyle = "#ffffff";
-            ctx.fillRect(0, 0, width, height);
-            if (isVertical) {
-                // Rotate 90 degrees clockwise for vertical orientation
-                ctx.save();
-                ctx.translate(width / 2, height / 2);
-                ctx.rotate(Math.PI / 2);
-                ctx.drawImage(intermediateCanvas, -generateWidth / 2, -generateHeight / 2);
-                ctx.restore();
-            } else {
-                // Draw directly for horizontal orientation
-                ctx.drawImage(intermediateCanvas, 0, 0);
+        // Create canvas for rotation if needed
+        let rotationCanvas = intermediateCanvas;
+        if (isVertical) {
+            rotationCanvas = document.createElement("canvas");
+            rotationCanvas.width = generateHeight;
+            rotationCanvas.height = generateWidth;
+            const rotCtx = rotationCanvas.getContext("2d");
+            if (rotCtx) {
+                rotCtx.fillStyle = "#ffffff";
+                rotCtx.fillRect(0, 0, rotationCanvas.width, rotationCanvas.height);
+                rotCtx.save();
+                rotCtx.translate(rotationCanvas.width / 2, rotationCanvas.height / 2);
+                rotCtx.rotate(Math.PI / 2);
+                rotCtx.drawImage(intermediateCanvas, -generateWidth / 2, -generateHeight / 2);
+                rotCtx.restore();
+            }
+        }
+        // For small barcodes, downscale from high DPI (288) to standard DPI (96) for consistency
+        let finalCanvas = rotationCanvas;
+        if (isSmallBarcode) {
+            const finalWidth = configuration.dimensions.unit === "cm" ? Math.round(configuration.dimensions.width / 2.54 * 96) : Math.round(configuration.dimensions.width * 96);
+            const finalHeight = configuration.dimensions.unit === "cm" ? Math.round(configuration.dimensions.height / 2.54 * 96) : Math.round(configuration.dimensions.height * 96);
+            finalCanvas = document.createElement("canvas");
+            finalCanvas.width = isVertical ? finalHeight : finalWidth;
+            finalCanvas.height = isVertical ? finalWidth : finalHeight;
+            const finalCtx = finalCanvas.getContext("2d");
+            if (finalCtx) {
+                finalCtx.imageSmoothingEnabled = true;
+                finalCtx.imageSmoothingQuality = 'high';
+                finalCtx.drawImage(rotationCanvas, 0, 0, finalCanvas.width, finalCanvas.height);
             }
         }
         // Convert canvas to data URL
-        const dataUrl = canvas.toDataURL("image/png");
+        const dataUrl = finalCanvas.toDataURL("image/png");
         return {
             dataUrl,
             filename
@@ -4750,7 +4792,7 @@ function Home() {
         },
         options: {
             showText: true,
-            stretch: false,
+            stretch: true,
             ignoreDigits: {
                 enabled: false,
                 position: "start",

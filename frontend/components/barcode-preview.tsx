@@ -65,15 +65,36 @@ function SingleBarcodePreview({ config, dimensions, label, sampleData, fontConfi
 
     try {
       const canvas = canvasRef.current
-      const width = convertToPixels(dimensions.width, dimensions.unit)
-      const height = convertToPixels(dimensions.height, dimensions.unit)
+
+      // Calculate dimensions based on barcode size for variable DPI
+      const heightCm = dimensions.unit === "cm"
+        ? dimensions.height
+        : dimensions.height * 2.54
+      const isSmallBarcode = heightCm < 1
+
+      // Use 3x DPI (288) for small barcodes to improve text sharpness
+      const DPI = isSmallBarcode ? 288 : 96
+
+      // Convert to pixels at appropriate DPI
+      const width = dimensions.unit === "cm"
+        ? Math.round((dimensions.width / 2.54) * DPI)
+        : Math.round(dimensions.width * DPI)
+      const height = dimensions.unit === "cm"
+        ? Math.round((dimensions.height / 2.54) * DPI)
+        : Math.round(dimensions.height * DPI)
 
       // Check if vertical orientation
       const isVertical = config.orientation === "vertical"
 
-      // When vertical, swap dimensions for generation, then rotate
-      const generateWidth = isVertical ? height : width
-      const generateHeight = isVertical ? width : height
+      // Use original dimensions for generation, then rotate
+      const generateWidth = width
+      const generateHeight = height
+
+      // For small barcodes, adjust font for better readability
+      const shouldAutoAdjust = activeFont.autoAdjustFont !== false
+      const adjustedFontSize = isSmallBarcode && shouldAutoAdjust
+        ? Math.max(activeFont.size * 0.7, 6)
+        : activeFont.size
 
       // Map barcode type to JsBarcode format
       const formatMap: Record<string, string> = {
@@ -89,15 +110,16 @@ function SingleBarcodePreview({ config, dimensions, label, sampleData, fontConfi
       // Create temporary canvas for JsBarcode generation
       const tempCanvas = document.createElement("canvas")
 
-      // Generate barcode on temporary canvas (use swapped dimensions for vertical)
+      // Generate barcode on temporary canvas
+      // Use consistent height (90%) regardless of stretch mode - stretch only affects rendering
       JsBarcode(tempCanvas, processedData, {
         format,
         width: config.options.stretch ? generateWidth / 100 : 2,
-        height: config.options.stretch ? generateHeight * 0.7 : generateHeight * 0.5,
+        height: generateHeight * 0.9, // Always 90% of canvas height for consistent size
         displayValue: config.options.showText,
         text: processedData,
         font: activeFont.family,
-        fontSize: activeFont.size,
+        fontSize: adjustedFontSize, // Use adjusted font size for small barcodes
         textMargin: 8,
         margin: 10,
         background: "#ffffff",
@@ -128,28 +150,53 @@ function SingleBarcodePreview({ config, dimensions, label, sampleData, fontConfi
         }
       }
 
-      // Set our canvas to exact dimensions
-      canvas.width = width
-      canvas.height = height
+      // Create canvas for rotation if needed
+      let rotationCanvas = intermediateCanvas
+      if (isVertical) {
+        rotationCanvas = document.createElement("canvas")
+        rotationCanvas.width = generateHeight
+        rotationCanvas.height = generateWidth
+        const rotCtx = rotationCanvas.getContext("2d")
+        if (rotCtx) {
+          rotCtx.fillStyle = "#ffffff"
+          rotCtx.fillRect(0, 0, rotationCanvas.width, rotationCanvas.height)
+          rotCtx.save()
+          rotCtx.translate(rotationCanvas.width / 2, rotationCanvas.height / 2)
+          rotCtx.rotate(Math.PI / 2)
+          rotCtx.drawImage(intermediateCanvas, -generateWidth / 2, -generateHeight / 2)
+          rotCtx.restore()
+        }
+      }
 
-      // Draw the generated barcode onto our fixed-size canvas
+      // For small barcodes, downscale from high DPI (288) to standard DPI (96) for consistency
+      let finalCanvas = rotationCanvas
+      if (isSmallBarcode) {
+        const finalWidth = dimensions.unit === "cm"
+          ? Math.round((dimensions.width / 2.54) * 96)
+          : Math.round(dimensions.width * 96)
+        const finalHeight = dimensions.unit === "cm"
+          ? Math.round((dimensions.height / 2.54) * 96)
+          : Math.round(dimensions.height * 96)
+
+        finalCanvas = document.createElement("canvas")
+        finalCanvas.width = isVertical ? finalHeight : finalWidth
+        finalCanvas.height = isVertical ? finalWidth : finalHeight
+
+        const finalCtx = finalCanvas.getContext("2d")
+        if (finalCtx) {
+          finalCtx.imageSmoothingEnabled = true
+          finalCtx.imageSmoothingQuality = 'high'
+          finalCtx.drawImage(rotationCanvas, 0, 0, finalCanvas.width, finalCanvas.height)
+        }
+      }
+
+      // Set our canvas to final dimensions and draw
+      canvas.width = finalCanvas.width
+      canvas.height = finalCanvas.height
+
       const ctx = canvas.getContext("2d")
       if (ctx) {
-        // Fill with white background
-        ctx.fillStyle = "#ffffff"
-        ctx.fillRect(0, 0, width, height)
-
-        if (isVertical) {
-          // Rotate 90 degrees clockwise for vertical orientation
-          ctx.save()
-          ctx.translate(width / 2, height / 2)
-          ctx.rotate(Math.PI / 2)
-          ctx.drawImage(intermediateCanvas, -generateWidth / 2, -generateHeight / 2)
-          ctx.restore()
-        } else {
-          // Draw directly for horizontal orientation
-          ctx.drawImage(intermediateCanvas, 0, 0)
-        }
+        ctx.drawImage(finalCanvas, 0, 0)
       }
 
       setError("")

@@ -27,7 +27,7 @@ export default function Home() {
     },
     options: {
       showText: true,
-      stretch: false,
+      stretch: true,
       ignoreDigits: {
         enabled: false,
         position: "start",

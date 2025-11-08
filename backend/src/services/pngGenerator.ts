@@ -35,6 +35,21 @@ const toMm = (value: number, unit: 'cm' | 'inches'): number => {
 }
 
 /**
+ * Convert barcode config dimensions to pixels accounting for units and orientation
+ */
+const convertConfigToPixels = (width: number, height: number, unit: 'cm' | 'inches', isVertical: boolean): { width: number; height: number } => {
+  // Convert to pixels at 96 DPI
+  const widthPx = unit === 'cm' ? Math.round((width / 2.54) * 96) : Math.round(width * 96)
+  const heightPx = unit === 'cm' ? Math.round((height / 2.54) * 96) : Math.round(height * 96)
+
+  // After rotation, dimensions swap for vertical orientation
+  if (isVertical) {
+    return { width: heightPx, height: widthPx }
+  }
+  return { width: widthPx, height: heightPx }
+}
+
+/**
  * Calculate grid layout for barcodes with dual mode support
  * Places primary and dual barcodes in columns: [primary, dual, primary, dual, ...]
  */
@@ -149,8 +164,8 @@ const calculateLayoutWithActualSizes = (
 
   const layout: BarcodeLayoutItem[] = []
 
-  // Internal padding between barcode content and cutting lines (print center feedback)
-  const internalPaddingMm = 2 // 2mm padding to prevent text from touching cutting lines
+  // Internal padding between barcode content and cutting lines (minimal spacing)
+  const internalPaddingMm = 0.25 // 0.25mm padding between barcode and border
 
   // Find the maximum barcode width in pixels
   const maxBarcodeWidthPx = Math.max(...barcodes.map((b) => b.width))
@@ -234,7 +249,7 @@ const getDefaultLayoutConfig = (): PrintLayoutConfig => ({
     right: 10,
   },
   spacingMm: 5,
-  borderWidthMm: 0.25, // Thin cutting line (was 1mm - print center feedback)
+  borderWidthMm: 0.5, // Minimum reliable line width for consistent printing across all printers
   borderColor: '#FF0000',
 })
 
@@ -312,24 +327,42 @@ export const generatePrintReadyPNG = async (
 
   // Generate all barcodes and get their actual dimensions
   const generatedBarcodes: Array<{ buffer: Buffer; width: number; height: number }> = []
+  const isVertical = barcodeConfig.orientation === 'vertical'
+
   for (const data of dataList) {
     // Generate primary barcode
     const primaryBarcode = await generateBarcode(data, primaryOptions)
     const primaryMetadata = await sharp(primaryBarcode.buffer).metadata()
+
+    // Calculate fallback dimensions accounting for orientation
+    const fallbackDims = convertConfigToPixels(
+      barcodeConfig.dimensions.width,
+      barcodeConfig.dimensions.height,
+      barcodeConfig.dimensions.unit,
+      isVertical
+    )
+
     generatedBarcodes.push({
       buffer: primaryBarcode.buffer,
-      width: primaryMetadata.width || mmToPixels(barcodeConfig.dimensions.width * 10),
-      height: primaryMetadata.height || mmToPixels(barcodeConfig.dimensions.height * 10),
+      width: primaryMetadata.width || fallbackDims.width,
+      height: primaryMetadata.height || fallbackDims.height,
     })
 
     // Generate dual barcode if enabled
     if (dualOptions) {
       const dualBarcode = await generateBarcode(data, dualOptions)
       const dualMetadata = await sharp(dualBarcode.buffer).metadata()
+
+      // Calculate fallback dimensions for dual barcode
+      const dualWidth = barcodeConfig.dualDimensions?.width || barcodeConfig.dimensions.width
+      const dualHeight = barcodeConfig.dualDimensions?.height || barcodeConfig.dimensions.height
+      const dualUnit = barcodeConfig.dualDimensions?.unit || barcodeConfig.dimensions.unit
+      const dualFallbackDims = convertConfigToPixels(dualWidth, dualHeight, dualUnit, isVertical)
+
       generatedBarcodes.push({
         buffer: dualBarcode.buffer,
-        width: dualMetadata.width || mmToPixels((barcodeConfig.dualDimensions?.width || barcodeConfig.dimensions.width) * 10),
-        height: dualMetadata.height || mmToPixels((barcodeConfig.dualDimensions?.height || barcodeConfig.dimensions.height) * 10),
+        width: dualMetadata.width || dualFallbackDims.width,
+        height: dualMetadata.height || dualFallbackDims.height,
       })
     }
   }
@@ -346,7 +379,7 @@ export const generatePrintReadyPNG = async (
   console.log(`Adjusted canvas: ${actualCanvasWidthPx}px × ${actualCanvasHeightPx}px based on actual barcode sizes`)
 
   // Internal padding in pixels (same as in layout calculation)
-  const internalPaddingPx = mmToPixels(2)
+  const internalPaddingPx = mmToPixels(0.25)
 
   // Create composite operations for all barcodes and borders
   const compositeOperations: Array<{ input: Buffer; top: number; left: number }> = []

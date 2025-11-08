@@ -29,17 +29,6 @@ export interface GeneratedBarcode {
 }
 
 /**
- * Convert cm or inches to pixels (96 DPI to match frontend preview)
- */
-const convertToPixels = (value: number, unit: 'cm' | 'inches'): number => {
-  const DPI = 96
-  if (unit === 'cm') {
-    return Math.round((value / 2.54) * DPI)
-  }
-  return Math.round(value * DPI)
-}
-
-/**
  * Map frontend barcode type to bwip-js barcode type
  */
 const mapBarcodeType = (type: string): string => {
@@ -82,23 +71,36 @@ export const generateBarcode = async (
     // Process data to remove ignored digits
     const processedData = processData(data, options.ignoreDigits)
 
-    const widthPx = convertToPixels(options.width, options.unit)
-    const heightPx = convertToPixels(options.height, options.unit)
+    // Calculate dimensions based on barcode size for variable DPI
+    const heightCm = options.unit === 'cm' ? options.height : options.height * 2.54
+    const isSmallBarcode = heightCm < 1
+
+    // Use 3x DPI (288) for small barcodes to improve text sharpness
+    const DPI = isSmallBarcode ? 288 : 96
+
+    // Convert to pixels at appropriate DPI
+    const widthPx = options.unit === 'cm'
+      ? Math.round((options.width / 2.54) * DPI)
+      : Math.round(options.width * DPI)
+    const heightPx = options.unit === 'cm'
+      ? Math.round((options.height / 2.54) * DPI)
+      : Math.round(options.height * DPI)
+
     const barcodeType = mapBarcodeType(options.type)
 
     // Map font family to bwip-js font identifier
     const fontIdentifier = getFontIdentifier(options.fontFamily)
 
-    // For small barcodes (< 1cm), make barcode bars smaller and text bigger for readability
+    // For small barcodes (< 1cm), adjust font and scale for better readability
     // Only apply auto-adjustment if autoAdjustFont is true (default behavior for backward compatibility)
-    const heightCm = options.unit === 'cm' ? options.height : options.height * 2.54
-    const isSmallBarcode = heightCm < 1
     const shouldAutoAdjust = options.autoAdjustFont !== false // true if undefined or explicitly true
 
     // Scale determines barcode bar size - smaller scale = smaller bars = more room for text
     const barcodeScale = isSmallBarcode && shouldAutoAdjust ? 1 : 2
-    // Increase font size for small barcodes to improve readability
-    const adjustedFontSize = isSmallBarcode && shouldAutoAdjust ? Math.min(options.fontSize * 1.3, 14) : options.fontSize
+    // Reduce font size for small barcodes to fit more pixels per character (improves sharpness)
+    const adjustedFontSize = isSmallBarcode && shouldAutoAdjust
+      ? Math.max(options.fontSize * 0.7, 6)  // Scale down to 70%, minimum 6px
+      : options.fontSize
     const adjustedTextOffset = isSmallBarcode && shouldAutoAdjust ? 6 : 12
 
     // Generate barcode with bwip-js - let it create at natural size with text
@@ -132,13 +134,13 @@ export const generateBarcode = async (
     // Generate barcode PNG buffer
     let buffer = await bwipjs.toBuffer(bwipOptions)
 
-    // For vertical orientation, we need to generate with swapped dimensions
+    // For vertical orientation, generate with original dimensions
     // Then rotate 90 degrees so the barcode reads correctly when the label is vertical
     const isVertical = options.orientation === 'vertical'
 
-    // When vertical, swap width/height so after rotation the barcode fills the space correctly
-    const resizeWidthPx = isVertical ? heightPx : widthPx
-    const resizeHeightPx = isVertical ? widthPx : heightPx
+    // Use original dimensions - rotation will happen after resize
+    const resizeWidthPx = widthPx
+    const resizeHeightPx = heightPx
 
     // Resize to target dimensions with sharpening for crisp text
     // If stretch is enabled, force exact dimensions
@@ -161,11 +163,11 @@ export const generateBarcode = async (
         })
         .toBuffer()
     } else {
-      // Normal mode: fit within dimensions maintaining aspect ratio
+      // Normal mode: force exact dimensions to match user configuration
+      // The barcode will maintain natural bar proportions but fill configured size
       buffer = await sharp(buffer)
         .resize(resizeWidthPx, resizeHeightPx, {
-          fit: 'inside', // Maintain aspect ratio, fit within bounds
-          withoutEnlargement: false,
+          fit: 'fill', // Force exact dimensions to match configured size
           kernel: sharp.kernel.lanczos3, // High-quality resize kernel
         })
         .sharpen({
@@ -176,6 +178,32 @@ export const generateBarcode = async (
         .png({
           compressionLevel: 9, // Maximum compression
           adaptiveFiltering: false, // Faster, better for barcodes
+        })
+        .toBuffer()
+    }
+
+    // For small barcodes, downscale from high DPI (288) to standard DPI (96) for consistency
+    if (isSmallBarcode) {
+      const finalWidthPx = options.unit === 'cm'
+        ? Math.round((options.width / 2.54) * 96)
+        : Math.round(options.width * 96)
+      const finalHeightPx = options.unit === 'cm'
+        ? Math.round((options.height / 2.54) * 96)
+        : Math.round(options.height * 96)
+
+      buffer = await sharp(buffer)
+        .resize(finalWidthPx, finalHeightPx, {
+          fit: 'fill',
+          kernel: sharp.kernel.lanczos3,  // Excellent for downscaling - preserves sharpness
+        })
+        .sharpen({
+          sigma: 2.0,  // Aggressive sharpening for small barcodes
+          m1: 1.0,     // Flatten (prevent halos)
+          m2: 1.0,     // Maximum edge definition for crisp text
+        })
+        .png({
+          compressionLevel: 9,
+          adaptiveFiltering: false,
         })
         .toBuffer()
     }
